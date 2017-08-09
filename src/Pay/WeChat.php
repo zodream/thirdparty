@@ -1,5 +1,5 @@
 <?php
-namespace Zodream\Domain\ThirdParty\Pay;
+namespace Zodream\ThirdParty\Pay;
 /**
  * URL: https://pay.weixin.qq.com/wiki/doc/api/app/app.php?chapter=9_1
  * Created by PhpStorm.

@@ -1,5 +1,5 @@
 <?php
-namespace Zodream\Domain\ThirdParty\Pay;
+namespace Zodream\ThirdParty\Pay;
 
 /**
  * Created by PhpStorm.

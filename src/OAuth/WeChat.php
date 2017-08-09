@@ -1,5 +1,5 @@
 <?php
-namespace Zodream\Domain\ThirdParty\OAuth;
+namespace Zodream\ThirdParty\OAuth;
 use Zodream\Infrastructure\ObjectExpand\StringExpand;
 use Zodream\Service\Factory;
 

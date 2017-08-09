@@ -18,7 +18,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Zodream\\Domain\\ThirdParty\\": "src/"
+            "Zodream\\ThirdParty\\": "src/"
         }
     }
 }

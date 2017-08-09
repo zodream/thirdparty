@@ -1,5 +1,5 @@
 <?php
-namespace Zodream\Domain\ThirdParty\SMS;
+namespace Zodream\ThirdParty\SMS;
 
 use Zodream\Domain\ThirdParty\ThirdParty;
 

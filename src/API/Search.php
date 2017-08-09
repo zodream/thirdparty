@@ -1,5 +1,5 @@
 <?php
-namespace Zodream\Domain\ThirdParty\API;
+namespace Zodream\ThirdParty\API;
 /**
  * ALL SEARCH ENGINE API
  * User: zx648

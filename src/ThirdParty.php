@@ -1,5 +1,5 @@
 <?php
-namespace Zodream\Domain\ThirdParty;
+namespace Zodream\ThirdParty;
 /**
  * 第三方接口
  * Created by PhpStorm.
