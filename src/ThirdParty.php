@@ -8,12 +8,12 @@ namespace Zodream\ThirdParty;
  * Time: 11:44
  */
 use Zodream\Domain\Filter\Filters\RequiredFilter;
+use Zodream\Helpers\Json;
+use Zodream\Helpers\Xml;
+use Zodream\Http\Curl;
 use Zodream\Infrastructure\Base\MagicObject;
 use Zodream\Service\Config;
-use Zodream\Domain\Support\Http;
-use Zodream\Infrastructure\ObjectExpand\JsonExpand;
-use Zodream\Infrastructure\ObjectExpand\XmlExpand;
-use Zodream\Infrastructure\Http\Component\Uri;
+use Zodream\Http\Uri;
 use Zodream\Service\Factory;
 
 abstract class ThirdParty extends MagicObject {
@@ -41,9 +41,9 @@ abstract class ThirdParty extends MagicObject {
     protected $http;
 
     public function __construct($config = array()) {
-        $this->http = new Http();
+        $this->http = new Curl();
         if (empty($config)) {
-            $this->set(Config::getInstance()->get($this->configKey));
+            $this->set(Factory::config($this->configKey));
             return;
         }
         if (array_key_exists($this->configKey, $config)
@@ -75,21 +75,15 @@ abstract class ThirdParty extends MagicObject {
     }
 
     protected function httpGet($url) {
-        $args = $this->http
-            ->setUrl($url)
-            ->request()
-            ->get();
+        $args = $this->http->get($url);
         Factory::log()->info(sprintf('HTTP GET %s => %s', $url, $args));
         return $args;
     }
 
     protected function httpPost($url, $data) {
-        $args = $this->http->setUrl($url)
-            ->request()
-            ->setCommonOption()
-            ->post($data);
+        $args = $this->http->post($url, $data);
         Factory::log()->info(sprintf('HTTP POST %s + %s => %s', $url,
-            is_array($data) ? JsonExpand::encode($data) : $data, $args));
+            is_array($data) ? Json::encode($data) : $data, $args));
         return $args;
     }
 
@@ -224,11 +218,11 @@ abstract class ThirdParty extends MagicObject {
     }
 
     protected function getXml($name, $args = array()) {
-        return XmlExpand::specialDecode($this->getByApi($name, $args));
+        return Xml::specialDecode($this->getByApi($name, $args));
     }
 
     protected function getJson($name, $args = array()) {
-        return JsonExpand::decode($this->getByApi($name, $args));
+        return Json::decode($this->getByApi($name, $args));
     }
 
     /**
