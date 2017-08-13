@@ -1,6 +1,7 @@
 <?php
 namespace Zodream\ThirdParty\OAuth;
 
+
 /**
  * Created by PhpStorm.
  * User: zx648
@@ -8,7 +9,7 @@ namespace Zodream\ThirdParty\OAuth;
  * Time: 15:25
  *
  */
-use Zodream\Infrastructure\ObjectExpand\JsonExpand;
+use Zodream\Helpers\Json;
 
 class QQ extends BaseOAuth {
 
@@ -82,7 +83,7 @@ class QQ extends BaseOAuth {
             $rightPos = strrpos($json, ')');
             $json  = substr($json, $leftPos + 1, $rightPos - $leftPos -1);
         }
-        return JsonExpand::decode($json);
+        return Json::decode($json);
     }
 
     /**

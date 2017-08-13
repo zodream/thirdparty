@@ -1,6 +1,7 @@
 <?php
 namespace Zodream\ThirdParty\OAuth;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
+
+use Zodream\Helpers\Str;
 use Zodream\Service\Factory;
 
 /**
@@ -121,7 +122,7 @@ class WeChat extends BaseOAuth {
     }
 
     public function webLogin(array $args = []) {
-        $state = StringExpand::randomNumber(7);
+        $state = Str::randomNumber(7);
         Factory::session()->set('state', $state);
         $this->set('state', $state);
         $url = $this->apiMap['webLogin'][0];

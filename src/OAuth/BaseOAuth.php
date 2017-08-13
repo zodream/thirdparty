@@ -6,9 +6,9 @@ namespace Zodream\ThirdParty\OAuth;
  * Date: 2016/4/10
  * Time: 14:34
  */
-use Zodream\Domain\ThirdParty\ThirdParty;
+use Zodream\ThirdParty\ThirdParty;
+use Zodream\Helpers\Str;
 use Zodream\Service\Factory;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
 use Zodream\Infrastructure\Http\Request;
 
 /**
@@ -61,7 +61,7 @@ abstract class BaseOAuth extends ThirdParty  {
      * 返回重定向到登录页面的链接
      */
     public function login() {
-        $state = StringExpand::randomNumber(7);
+        $state = Str::randomNumber(7);
         Factory::session()->set('state', $state);
         $this->set('state', $state);
         return $this->getUrl('login');
