@@ -9,9 +9,9 @@ namespace Zodream\ThirdParty\Pay;
  */
 use Zodream\Domain\Image\Image;
 use Zodream\Domain\Image\QrCode;
-use Zodream\Infrastructure\Disk\File;
-use Zodream\Infrastructure\ObjectExpand\StringExpand;
-use Zodream\Infrastructure\ObjectExpand\XmlExpand;
+use Zodream\Disk\File;
+use Zodream\Helpers\Str;
+use Zodream\Helpers\Xml;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Http\Uri;
 use Zodream\Service\Factory;
@@ -224,13 +224,13 @@ class WeChat extends BasePay {
      * @return array|false
      */
     protected function getSignData($name, array $args = array()) {
-        $args['noncestr'] = $args['nonce_str'] = StringExpand::random(32);
+        $args['noncestr'] = $args['nonce_str'] = Str::random(32);
         $data = parent::getSignData($name, $args);
         return empty($this->error) ? $data : false;
     }
 
     protected function getPostData($name, array $args) {
-        return XmlExpand::encode(
+        return Xml::encode(
             $this->getSignData($name, $args), 'xml'
         );
     }
@@ -313,7 +313,7 @@ class WeChat extends BasePay {
     }
 
     public function appCallbackReturn(array $args = array()) {
-        return XmlExpand::specialEncode(
+        return Xml::specialEncode(
             $this->getData($this->apiMap['appReturn'][1],
                 array_merge($this->get(), $args)));
     }
@@ -325,7 +325,7 @@ class WeChat extends BasePay {
      * @return int
      */
     public function downloadBill($file, array $args = array()) {
-        $args = $this->httpPost($this->apiMap['bill'][0], XmlExpand::encode(
+        $args = $this->httpPost($this->apiMap['bill'][0], Xml::encode(
             $this->getSignData('bill', $args), 'xml'
         ));
         if (!$file instanceof File) {
@@ -369,9 +369,9 @@ class WeChat extends BasePay {
 
         //第二种方式，两个文件合成一个.pem文件
         $this->http->addOption(CURLOPT_SSLCERT, (string)$this->privateKeyFile);
-        $args = XmlExpand::decode(
+        $args = Xml::decode(
             $this->httpPost($this->apiMap['refund'][0],
-                XmlExpand::encode($data, 'xml'
+                Xml::encode($data, 'xml'
                 )));
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
@@ -419,7 +419,7 @@ class WeChat extends BasePay {
      * @throws \ErrorException
      */
     public function callback() {
-        $args = XmlExpand::specialDecode(Request::input());
+        $args = Xml::specialDecode(Request::input());
         Factory::log()
             ->info('WECHAT PAY CALLBACK: '.Request::input());
         if (!is_array($args)) {
@@ -458,7 +458,7 @@ class WeChat extends BasePay {
         if ($order === false) {
             return false;
         }*/
-        return XmlExpand::encode($this->getSignData('qrCallback'));
+        return Xml::encode($this->getSignData('qrCallback'));
     }
 
     /**
@@ -487,7 +487,7 @@ class WeChat extends BasePay {
      */
     public function jsPay(array $args = array()) {
         $args['appId'] = $this->get('appid'); //防止微信返回appid
-        $args['nonceStr'] = StringExpand::random(32);
+        $args['nonceStr'] = Str::random(32);
         $args['timeStamp'] = time();
         $data = $this->getData($this->apiMap['jsapi'][1], array_merge($this->get(), $args));
         $data['package'] = 'prepay_id='.$data['package']['prepay_id'];

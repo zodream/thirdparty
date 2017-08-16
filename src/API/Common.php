@@ -1,7 +1,7 @@
 <?php
 namespace Zodream\ThirdParty\API;
 
-use Zodream\Domain\ThirdParty\ThirdParty;
+use Zodream\ThirdParty\ThirdParty;
 
 class Common extends ThirdParty  {
 

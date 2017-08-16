@@ -7,8 +7,8 @@ namespace Zodream\ThirdParty\API;
  * Date: 2016/6/2
  * Time: 12:55
  */
-use Zodream\Domain\ThirdParty\ThirdParty;
-use Zodream\Infrastructure\ObjectExpand\JsonExpand;
+use Zodream\Helpers\Json;
+use Zodream\ThirdParty\ThirdParty;
 
 class Microsoft extends ThirdParty  {
 
@@ -34,7 +34,7 @@ class Microsoft extends ThirdParty  {
         /**
          * {"Host":"","Url":""}
          */
-        $data = JsonExpand::decode($this->httpPost($this->apiMap['upload'], $img));
+        $data = Json::decode($this->httpPost($this->apiMap['upload'], $img));
         $this->set(array(
             'MsgId' => time()."063",
             'CreateTime' => time(),

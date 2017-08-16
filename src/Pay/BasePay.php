@@ -7,8 +7,8 @@ namespace Zodream\ThirdParty\Pay;
  * Date: 2016/8/17
  * Time: 15:22
  */
-use Zodream\Domain\ThirdParty\ThirdParty;
-use Zodream\Infrastructure\Disk\File;
+use Zodream\ThirdParty\ThirdParty;
+use Zodream\Disk\File;
 
 abstract class BasePay extends ThirdParty  {
     const MD5 = 'MD5';

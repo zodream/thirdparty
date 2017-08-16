@@ -1,8 +1,16 @@
 <?php
 namespace Zodream\ThirdParty\SMS;
 
-use Zodream\Domain\ThirdParty\ThirdParty;
+use Zodream\ThirdParty\ThirdParty;
 
+/**
+ * example: [
+'app_key' => '',
+'secret' => '',
+ ]
+ * Class ALiDaYu
+ * @package Zodream\ThirdParty\SMS
+ */
 class ALiDaYu extends ThirdParty {
 
     protected $baseMap = [
@@ -13,7 +21,7 @@ class ALiDaYu extends ThirdParty {
             'sign_method' => 'md5',
             'sign',
             'session',
-            '#timestamp',
+            '#timestamp', // date('Y-m-d H:i:s')
             'format' => 'json',
             'v' => '2.0',
             'partner_id',
@@ -84,7 +92,8 @@ class ALiDaYu extends ThirdParty {
             'sms_template_code' => $templateId,
             'sms_free_sign_name' => $signName,
             'rec_num' => $mobile,
-            'sms_param' => is_array($data) ? json_encode($data) : $data
+            'sms_param' => is_array($data) ? json_encode($data) : $data,
+            'timestamp' => date('Y-m-d H:i:s')
         ]);
         if (array_key_exists('error_response', $args)) {
             throw new \Exception($args['error_response']['msg']);
@@ -106,6 +115,6 @@ class ALiDaYu extends ThirdParty {
             }
             $arg .= $key.$item;
         }
-        return strtoupper(md5($secret.implode('', $arg).$secret));
+        return strtoupper(md5($secret.$arg.$secret));
     }
 }

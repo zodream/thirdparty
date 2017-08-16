@@ -7,7 +7,7 @@ namespace Zodream\ThirdParty\SMS;
  * Date: 2016/5/12
  * Time: 15:13
  */
-use Zodream\Domain\ThirdParty\ThirdParty;
+use Zodream\ThirdParty\ThirdParty;
 
 /**
  * Class IHuYi

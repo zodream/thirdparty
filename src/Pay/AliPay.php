@@ -7,7 +7,7 @@ namespace Zodream\ThirdParty\Pay;
  * Date: 2016/8/17
  * Time: 15:21
  */
-use Zodream\Infrastructure\Error\FileException;
+use Zodream\Disk\FileException;
 use Zodream\Http\Uri;
 
 class AliPay extends BasePay {
