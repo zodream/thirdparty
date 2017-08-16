@@ -45,7 +45,7 @@ class GitHub extends BaseOAuth {
      */
     public function callback() {
         parent::callback();
-        $this->http->addHeaders(['Accept' => 'application/json']);
+        $this->http->setHeaders(['Accept' => 'application/json']);
         $access = $this->getJson('access');
         if (!array_key_exists('access_token', $access)) {
             return false;
@@ -56,7 +56,7 @@ class GitHub extends BaseOAuth {
     }
     
     public function getInfo() {
-        $this->http->addHeaders(['Authorization' => 'token OAUTH-TOKEN']);
+        $this->http->setHeaders(['Authorization' => 'token OAUTH-TOKEN']);
         return $this->getJson('info');
     }
 }

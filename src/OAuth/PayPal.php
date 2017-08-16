@@ -64,7 +64,7 @@ class PayPal extends BaseOAuth {
 
     public function __construct(array $config = array()) {
         parent::__construct($config);
-        $this->http->setOption(array(
+        $this->http->setOpts(array(
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_SSL_VERIFYPEER => FALSE,
             CURLOPT_SSLVERSION => 3
@@ -98,12 +98,12 @@ class PayPal extends BaseOAuth {
      * @return array
      */
     public function getAccess() {
-        $this->http->setDefaultOption([
+        $this->http->setOpts([
             CURLOPT_VERBOSE        => 1,
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_SSL_VERIFYPEER => FALSE
         ]);
-        $this->http->addHeaders(array(
+        $this->http->setHeaders(array(
             'Content-Type' => 'application/x-www-form-urlencoded',
             'Authorization' => 'Basic ' . base64_encode($this->get('client_id') .
                     ':' . $this->get('client_secret'))
@@ -119,7 +119,7 @@ class PayPal extends BaseOAuth {
      * @return array|false
      */
     public function getInfo() {
-        $this->http->addHeaders(array(
+        $this->http->setHeaders(array(
             'Authorization' => "Bearer " . $this->get('access_token'),
             'Content-Type' => 'x-www-form-urlencoded'
         ));
