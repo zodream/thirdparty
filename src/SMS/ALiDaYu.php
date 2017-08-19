@@ -8,7 +8,7 @@ use Zodream\ThirdParty\ThirdParty;
 'app_key' => '',
 'secret' => '',
  ]
- * Class ALiDaYu
+ * 阿里大于短信
  * @package Zodream\ThirdParty\SMS
  */
 class ALiDaYu extends ThirdParty {
