@@ -76,14 +76,14 @@ abstract class ThirdParty extends MagicObject {
 
     protected function httpGet($url) {
         $args = $this->http->get($url);
-        Factory::log()->info(sprintf('HTTP GET %s => %s', $url, $args));
+        Factory::log()->info(sprintf('HTTP GET %s => %s', $url, $this->http->rawResponse));
         return $args;
     }
 
     protected function httpPost($url, $data) {
         $args = $this->http->post($url, $data);
         Factory::log()->info(sprintf('HTTP POST %s + %s => %s', $url,
-            is_array($data) ? Json::encode($data) : $data, $args));
+            is_array($data) ? Json::encode($data) : $data, $this->http->rawResponse));
         return $args;
     }
 
@@ -218,11 +218,12 @@ abstract class ThirdParty extends MagicObject {
     }
 
     protected function getXml($name, $args = array()) {
-        return Xml::specialDecode($this->getByApi($name, $args));
+        $this->http->setXmlDecoder(Xml::class.'::specialDecode');
+        return $this->getByApi($name, $args)();
     }
 
     protected function getJson($name, $args = array()) {
-        return Json::decode($this->getByApi($name, $args));
+        return $this->getByApi($name, $args);
     }
 
     /**
