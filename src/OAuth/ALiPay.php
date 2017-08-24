@@ -90,7 +90,7 @@ class ALiPay extends BaseOAuth {
             return false;
         }
         $user['username'] = $user['nick_name'];
-        $user['sex'] = $user['gender'] == 'F' ? '女': '男';
+        $user['sex'] = $user['gender'];
         $this->set($user);
         return $user;
     }

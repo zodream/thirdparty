@@ -71,7 +71,7 @@ class DouBan extends BaseOAuth {
             return false;
         }
         $user['username'] = $user['name'];
-        $user['sex'] = '女';
+        $user['sex'] = 'F';
         return $user;
     }
 }

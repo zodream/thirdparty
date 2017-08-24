@@ -115,7 +115,7 @@ class WeChat extends BaseOAuth {
         }
         $user['username'] = $user['nickname'];
         $user['avatar'] = $user['headimgurl'];
-        $user['sex'] = $user['sex'] == 2 ? '女' : '男';
+        $user['sex'] = $user['sex'] == 2 ? 'F' : 'M';
         $user['identity'] = isset($user['unionid']) ? $user['unionid'] : $user['openid'];
         $this->set($user);
         return $user;

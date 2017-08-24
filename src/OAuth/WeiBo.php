@@ -134,7 +134,7 @@ lang	string	用户当前的语言版本，zh-cn：简体中文，zh-tw：繁体�
         }
         $user['username'] = $user['screen_name'];
         $user['avatar'] = $user['profile_image_url'];
-        $user['sex'] = $user['gender'] == 'm' ? '男' : '女';
+        $user['sex'] = strtoupper($user['gender']);
         $this->set($user);
         return $user;
     }

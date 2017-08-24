@@ -116,6 +116,7 @@ class BaiDu extends BaseOAuth {
             return false;
         }
         $user['avatar'] = $user['portrait'];
+        $user['sex'] = $user['sex'] == '男' ? 'M' : 'F';
         $this->set($user);
         return $user;
     }
