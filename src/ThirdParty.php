@@ -12,7 +12,6 @@ use Zodream\Helpers\Json;
 use Zodream\Helpers\Xml;
 use Zodream\Http\Curl;
 use Zodream\Infrastructure\Base\MagicObject;
-use Zodream\Service\Config;
 use Zodream\Http\Uri;
 use Zodream\Service\Factory;
 
@@ -36,7 +35,7 @@ abstract class ThirdParty extends MagicObject {
     protected $apiMap = array();
 
     /**
-     * @var Http
+     * @var Curl
      */
     protected $http;
 
@@ -219,7 +218,7 @@ abstract class ThirdParty extends MagicObject {
 
     protected function getXml($name, $args = array()) {
         $this->http->setXmlDecoder(Xml::class.'::specialDecode');
-        return $this->getByApi($name, $args)();
+        return $this->getByApi($name, $args);
     }
 
     protected function getJson($name, $args = array()) {
