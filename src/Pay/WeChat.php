@@ -29,6 +29,8 @@ class WeChat extends BasePay {
      */
     protected $configKey = 'wechat';
 
+    protected $ignoreKeys = ['sign'];
+
     protected $apiMap = [
         'order' => [ //统一下单
             'https://api.mch.weixin.qq.com/pay/unifiedorder',
@@ -254,7 +256,7 @@ class WeChat extends BasePay {
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
-        if (!$this->verify($args, $args['sign'])) {
+        if (!$this->verify($args)) {
             throw new \InvalidArgumentException('数据验签失败！');
         }
         $this->set($args);
@@ -276,7 +278,7 @@ class WeChat extends BasePay {
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
-        if (!$this->verify($args, $args['sign'])) {
+        if (!$this->verify($args)) {
             throw new \InvalidArgumentException('数据验签失败！');
         }
         return $args;
@@ -293,7 +295,7 @@ class WeChat extends BasePay {
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
-        if (!$this->verify($args, $args['sign'])) {
+        if (!$this->verify($args)) {
             throw new \InvalidArgumentException('数据验签失败！');
         }
         return $args;
@@ -345,7 +347,7 @@ class WeChat extends BasePay {
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
-        if (!$this->verify($args, $args['sign'])) {
+        if (!$this->verify($args)) {
             throw new \InvalidArgumentException('数据验签失败！');
         }
         return $args;
@@ -376,7 +378,7 @@ class WeChat extends BasePay {
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
-        if (!$this->verify($args, $args['sign'])) {
+        if (!$this->verify($args)) {
             throw new \InvalidArgumentException('数据验签失败！');
         }
         return $args;
@@ -395,7 +397,8 @@ class WeChat extends BasePay {
         reset($args);
         $arg = '';
         foreach ($args as $key => $item) {
-            if ($this->checkEmpty($item) || $key == 'sign') {
+            if ($this->checkEmpty($item) ||
+                in_array($key, $this->ignoreKeys)) {
                 continue;
             }
             $arg .= "{$key}={$item}&";
@@ -409,7 +412,10 @@ class WeChat extends BasePay {
      * @param $sign
      * @return bool
      */
-    public function verify(array $args, $sign) {
+    public function verify(array $args, $sign = null) {
+        if (is_null($sign)) {
+            $sign = $args[$this->signKey];
+        }
         return $this->sign($args) === $sign;
     }
 
@@ -428,7 +434,7 @@ class WeChat extends BasePay {
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
-        if (!$this->verify($args, $args['sign'])) {
+        if (!$this->verify($args)) {
             throw new \InvalidArgumentException('数据验签失败！');
         }
         return $args;
@@ -489,7 +495,8 @@ class WeChat extends BasePay {
         $args['appId'] = $this->get('appid'); //防止微信返回appid
         $args['nonceStr'] = Str::random(32);
         $args['timeStamp'] = time();
-        $data = $this->getData($this->apiMap['jsapi'][1], array_merge($this->get(), $args));
+        $data = $this->getData($this->apiMap['jsapi'][1],
+            array_merge($this->get(), $args));
         $data['package'] = 'prepay_id='.$data['package']['prepay_id'];
         $data['paySign'] = $this->sign($data);
         return $data;
@@ -506,7 +513,7 @@ class WeChat extends BasePay {
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
-        if (!$this->verify($args, $args['sign'])) {
+        if (!$this->verify($args)) {
             throw new \InvalidArgumentException('数据验签失败！');
         }
         $this->set($args);

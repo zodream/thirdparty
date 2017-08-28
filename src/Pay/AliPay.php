@@ -25,6 +25,11 @@ class AliPay extends BasePay {
      */
     protected $configKey = 'alipay';
 
+    protected $ignoreKeys = [
+        'sign',
+        'sign_type'
+    ];
+
     /**
      * 支付宝公钥
      * @var string
@@ -194,7 +199,7 @@ class AliPay extends BasePay {
         if (array_key_exists('biz_content', $data)) {
             $data['biz_content'] = $this->encodeContent($data['biz_content']);
         }
-        $data['sign'] = $this->sign($data);
+        $data[$this->signKey] = $this->sign($data);
         return $data;
     }
 
@@ -327,7 +332,10 @@ class AliPay extends BasePay {
         return base64_encode($sign);
     }
 
-    public function verify(array $params, $sign) {
+    public function verify(array $params, $sign = null) {
+        if (is_null($sign)) {
+            $sign = $params[$this->signKey];
+        }
         if (array_key_exists('sign_type', $params)) {
             $this->signType = strtoupper($params['sign_type']);
         }
@@ -397,8 +405,7 @@ class AliPay extends BasePay {
         $args = [];
         foreach ($params as $key => $item) {
             if ($this->checkEmpty($item)
-                || $key == 'sign'
-                || $key == 'sign_type'
+                || in_array($key, $this->ignoreKeys)
                 || strpos($item, '@') === 0
             ) {
                 continue;
@@ -416,10 +423,8 @@ class AliPay extends BasePay {
         Factory::log()
             ->info('ALIPAY CALLBACK: '.var_export($_POST, true));
         $data = $_POST;//Requests::isPost() ? $_POST : $_GET;
-        if (!array_key_exists('sign', $data) || 
-            !$this->verify($data, $data['sign'])) {
+        if (!$this->verify($data)) {
             throw new \InvalidArgumentException('验签失败！');
-            return false;
         }
         return $data;
     }
@@ -445,7 +450,7 @@ class AliPay extends BasePay {
         if ($args['code'] != 10000) {
             throw new \ErrorException($args['msg']);
         }
-        if (!$this->verify($args, $args['sign'])) {
+        if (!$this->verify($args)) {
             throw new \InvalidArgumentException('数据验签失败！');
         }
         return $args;
@@ -457,7 +462,7 @@ class AliPay extends BasePay {
      * @return string
      */
     public function getAppPayOrder($arg = array()) {
-        return http_build_query($this->getSignData('appPay'));
+        return http_build_query($this->getSignData('appPay', $arg));
     }
 
     /**
@@ -492,7 +497,8 @@ class AliPay extends BasePay {
         reset($data);
         $args = [];
         foreach ($data as $key => $item) {
-            if ($this->checkEmpty($item) || $key == 'sign' || $key == 'sign_type') {
+            if ($this->checkEmpty($item)
+                || in_array($key, $this->ignoreKeys)) {
                 continue;
             }
             $args[] = $key.'="'.$item.'"';
@@ -515,7 +521,7 @@ class AliPay extends BasePay {
     /**
      * 及时支付
      * @param array $arg
-     * @return $this
+     * @return Uri
      */
     public function getWebPayUrl($arg = array()) {
         $uri = new Uri();

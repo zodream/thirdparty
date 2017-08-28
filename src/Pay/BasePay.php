@@ -11,6 +11,7 @@ use Zodream\ThirdParty\ThirdParty;
 use Zodream\Disk\File;
 
 abstract class BasePay extends ThirdParty  {
+
     const MD5 = 'MD5';
     const RSA = 'RSA';
     const RSA2 = 'RSA2';
@@ -18,6 +19,14 @@ abstract class BasePay extends ThirdParty  {
     protected $signType = self::MD5;
 
     protected $key;
+
+    protected $signKey = 'sign';
+
+    /**
+     * 不参加签名字段
+     * @var array
+     */
+    protected $ignoreKeys = [];
 
     /**
      * @var File
@@ -107,7 +116,7 @@ abstract class BasePay extends ThirdParty  {
             throw new \InvalidArgumentException('API ERROR');
         }
         $data = $this->getData($this->apiMap[$name][1], array_merge($this->get(), $args));
-        $data['sign'] = $this->sign($data);
+        $data[$this->signKey] = $this->sign($data);
         return $data;
     }
 
@@ -123,7 +132,7 @@ abstract class BasePay extends ThirdParty  {
      * @param $sign
      * @return bool
      */
-    abstract public function verify(array $args, $sign);
+    abstract public function verify(array $args, $sign = null);
 
     /**
      * @return mixed
