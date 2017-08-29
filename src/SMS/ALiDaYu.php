@@ -110,7 +110,7 @@ class ALiDaYu extends ThirdParty {
         reset($data);
         $arg = '';
         foreach ($data as $key => $item) {
-            if ($this->checkEmpty($item) || $key == 'sign') {
+            if ($this->isEmpty($item) || $key == 'sign') {
                 continue;
             }
             $arg .= $key.$item;

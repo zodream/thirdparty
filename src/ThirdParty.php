@@ -190,7 +190,7 @@ abstract class ThirdParty extends MagicObject {
         if (array_key_exists($keyTemp[0], $args)) {
             $item = $args[$keyTemp[0]];
         }
-        if ($this->checkEmpty($item)) {
+        if ($this->isEmpty($item)) {
             if ($need) {
                 throw  new \InvalidArgumentException($keyTemp[0].' IS NEED!');
             }
@@ -230,7 +230,7 @@ abstract class ThirdParty extends MagicObject {
      * @param $value
      * @return bool
      */
-    protected function checkEmpty($value) {
+    protected function isEmpty($value) {
         $filter = new RequiredFilter();
         return !$filter->validate($value);
     }

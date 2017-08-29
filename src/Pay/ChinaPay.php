@@ -144,7 +144,7 @@ class ChinaPay extends BasePay {
         ksort($params);
         $args = [];
         foreach ($params as $key => $item) {
-            if ($this->checkEmpty($item)
+            if ($this->isEmpty($item)
                 || in_array($key, $this->ignoreKeys)
             ) {
                 continue;
