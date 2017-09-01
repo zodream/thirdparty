@@ -58,6 +58,9 @@ abstract class BasePay extends ThirdParty  {
         if ($this->has('caFile')) {
             $this->setCaFile($this->get('caFile'));
         }
+        if ($this->has('ignoreKeys')) {
+            $this->ignoreKeys = $this->get('ignoreKeys');
+        }
         $this->setSignType($this->get('signType'));
     }
     

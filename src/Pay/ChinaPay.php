@@ -7,6 +7,7 @@ use Exception;
  * 银联电子支付
  * 私钥是在网银控制台里申请，然后从浏览器的 证书管理里导出 并设置私钥密码 .pfx
  * 公钥是给的 .cer
+ * 在通知url中的参数不参与签名 请加入忽略项中
  * @package Zodream\ThirdParty\Pay
  *
  */
