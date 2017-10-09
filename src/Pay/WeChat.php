@@ -256,6 +256,9 @@ class WeChat extends BasePay {
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
+        if ($args['result_code'] != 'SUCCESS') {
+            throw new \ErrorException($args['err_code_des']);
+        }
         if (!$this->verify($args)) {
             throw new \InvalidArgumentException('数据验签失败！');
         }
