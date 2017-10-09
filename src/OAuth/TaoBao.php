@@ -95,7 +95,7 @@ class TaoBao extends BaseOAuth {
      */
     public function getInfo() {
         $this->identity = $this->get('taobao_user_id');
-        $this->username = $this->get('taobao_user_nick');
+        $this->username = urldecode($this->get('taobao_user_nick'));
         return $this->get();
     }
 }
