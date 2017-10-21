@@ -9,6 +9,7 @@ namespace Zodream\ThirdParty;
  */
 use Zodream\Domain\Filter\Filters\RequiredFilter;
 use Zodream\Helpers\Json;
+use Zodream\Helpers\Str;
 use Zodream\Helpers\Xml;
 use Zodream\Http\Curl;
 use Zodream\Infrastructure\Base\MagicObject;
@@ -59,6 +60,22 @@ abstract class ThirdParty extends MagicObject {
      */
     public function getName() {
         return $this->configKey;
+    }
+
+    /**
+     * 设置
+     * @param $name
+     * @param null $map
+     * @return $this
+     */
+    public function setMap($name, $map = null) {
+        if (!is_array($name)) {
+            $name = [
+                $name => $map
+            ];
+        }
+        $this->apiMap = array_merge($this->apiMap, $name);
+        return $this;
     }
 
     /**
@@ -244,6 +261,10 @@ abstract class ThirdParty extends MagicObject {
      * @return array          返加调用结果数组
      */
     public function __call($name, $arg) {
+        $method = 'get'.Str::studly($name);
+        if (method_exists($this, $method)) {
+            return call_user_func_array([$this, $method], $arg);
+        }
         return $this->getByApi($name, isset($arg[0]) ? $arg[0] : array());
     }
 

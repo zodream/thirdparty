@@ -1,5 +1,7 @@
 <?php
 namespace Zodream\ThirdParty\OAuth;
+use Zodream\ThirdParty\ALi\OAuth;
+
 /**
  * Created by PhpStorm.
  * User: zx648
@@ -15,28 +17,12 @@ class ALiPay extends BaseOAuth {
             'https://openauth.alipay.com/oauth2/publicAppAuthorize.htm',
             array(
                 '#app_id',
-                '#scope',   // auth_userinfo   auth_base
+                'scope' => 'auth_user',   // auth_userinfo   auth_base
                 'response_type' => 'code',
                 'redirect_uri',
                 'state'
             )
         ),
-        'access' => array(
-            'https://openapi.alipay.com/gateway.do',
-            array(
-                'code',       // 二选一
-                'refresh_token', //二选一
-                'grant_type' => 'authorization_code'  //值为authorization_code时，代表用code换取；值为refresh_token时，代表用refresh_token换取
-            ),
-            'post'
-        ),
-        /** scope=auth_base，在第三步就可以获取到用户的userId，无需走第四步。如果scope=auth_userinfo */
-        'info' => array(
-            'https://openapi.alipay.com/gateway.do',
-            array(
-                '#auth_token'
-            )
-        )
     );
 
     /**
@@ -53,11 +39,11 @@ class ALiPay extends BaseOAuth {
          * re_expires_in
          * refresh_token
          */
-        $access = $this->getJson('access');
+        $access = (new OAuth())->getToken($this->get('code'));
         if (!is_array($access) || !array_key_exists('access_token', $access)) {
             return false;
         }
-        $access['identity'] = $access['access_token'];
+        $access['identity'] = $access['user_id'];
         $this->set($access);
         return $access;
     }
@@ -85,8 +71,8 @@ class ALiPay extends BaseOAuth {
         user_status	用户状态（Q/T/B/W）	String	Q代表快速注册用户；T代表已认证用户；B代表被冻结账户；W代表已注册，未激活的账户	不可空	T
         is_id_auth	是否身份证认证	String	T为是身份证认证，F为非身份证认证	不可空	T
          */
-        $user = $this->getJson('info');
-        if (!is_array($user) || !array_key_exists('nick_name', $user)) {
+        $user = (new OAuth())->getInfo($this->get('access_token'));
+        if (!is_array($user) || $user['code'] != 10000) {
             return false;
         }
         $user['username'] = $user['nick_name'];
