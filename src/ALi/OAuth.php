@@ -12,7 +12,7 @@ class OAuth extends BaseALi {
             'grant_type' => 'authorization_code'  //值为authorization_code时，代表用code换取；值为refresh_token时，代表用refresh_token换取
         ],
         'info' => [
-            '#auth_token',
+            'method' => 'alipay.user.info.share',
         ]
     ];
 

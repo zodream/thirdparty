@@ -42,6 +42,7 @@ abstract class BaseALi extends ThirdParty {
         'sign',
         '#timestamp', //yyyy-MM-dd HH:mm:ss
         'version' => '1.0',
+        'auth_token',
         'app_auth_token'
     ];
 

@@ -20,7 +20,7 @@ class ALiPay extends BaseOAuth {
             'https://openauth.alipay.com/oauth2/publicAppAuthorize.htm',
             array(
                 '#app_id',
-                'scope' => 'auth_user',   // auth_userinfo   auth_base
+                'scope' => 'auth_user',   // auth_userinfo  auth_user auth_base
                 'response_type' => 'code',
                 'redirect_uri',
                 'state'
