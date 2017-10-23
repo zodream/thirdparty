@@ -22,7 +22,7 @@ class OAuth extends BaseALi {
      * @return mixed
      */
     public function getToken($code) {
-        if (is_array(!$code)) {
+        if (!is_array($code)) {
             $code = [
                 'code' => $code,
             ];

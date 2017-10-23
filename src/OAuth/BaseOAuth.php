@@ -23,6 +23,7 @@ use Zodream\Infrastructure\Http\Request;
 abstract class BaseOAuth extends ThirdParty  {
 
     protected $baseUrl = '';
+    protected $codeKey = 'code';
 
     public function getBaseUrl() {
         return $this->baseUrl;
@@ -49,7 +50,7 @@ abstract class BaseOAuth extends ThirdParty  {
         if (empty($state) || $state != Factory::session()->get('state')) {
             return false;
         }
-        $code = Request::get('code');
+        $code = Request::get($this->codeKey);
         if (empty($code)) {
             return false;
         }

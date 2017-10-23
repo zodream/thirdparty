@@ -1,5 +1,6 @@
 <?php
 namespace Zodream\ThirdParty\OAuth;
+
 use Zodream\ThirdParty\ALi\OAuth;
 
 /**
@@ -11,6 +12,8 @@ use Zodream\ThirdParty\ALi\OAuth;
 class ALiPay extends BaseOAuth {
 
     protected $configKey = 'alipay';
+
+    protected $codeKey = 'auth_code';
 
     protected $apiMap = array(
         'login' => array(

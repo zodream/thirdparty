@@ -28,8 +28,7 @@ abstract class BaseALi extends ThirdParty {
     protected $signKey = 'sign';
 
     protected $ignoreKeys = [
-        'sign',
-        'sign_type'
+        'sign'
     ];
 
     protected $baseUrl = 'https://openapi.alipay.com/gateway.do';
@@ -39,7 +38,7 @@ abstract class BaseALi extends ThirdParty {
         'method' => '',
         'format' => 'JSON',
         'charset' => 'utf-8',
-        'sign_type' => 'RSA',
+        'sign_type' => 'RSA2',
         'sign',
         '#timestamp', //yyyy-MM-dd HH:mm:ss
         'version' => '1.0',
@@ -117,7 +116,7 @@ abstract class BaseALi extends ThirdParty {
      * @return string
      */
     public function getSignType() {
-        return strtoupper($this->get('sign_type'), self::RSA);
+        return strtoupper($this->get('sign_type', self::RSA2));
     }
 
     protected function getByApi($name, $args = array()) {
@@ -185,7 +184,9 @@ abstract class BaseALi extends ThirdParty {
         } else {
             openssl_sign($content, $sign, $res);
         }
-        openssl_free_key($res);
+        if (is_resource($res)) {
+            openssl_free_key($res);
+        }
         return base64_encode($sign);
     }
 
@@ -257,8 +258,9 @@ abstract class BaseALi extends ThirdParty {
         }
 
         //释放资源
-        openssl_free_key($res);
-
+        if (is_resource($res)) {
+            openssl_free_key($res);
+        }
         return $result;
     }
 }
