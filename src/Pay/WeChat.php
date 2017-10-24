@@ -489,6 +489,24 @@ class WeChat extends BasePay {
     }
 
     /**
+     * h5下单获取支付链接，并加上回调地址
+     * @param array $args
+     * @param string|Uri $redirect_url
+     * @return string
+     */
+    public function h5Pay(array $args = [], $redirect_url = null) {
+        $args['trade_type'] = 'MWEB';
+        $data = $this->getOrder($args);
+        if ($data === false) {
+            return false;
+        }
+        if (array_key_exists('mweb_url', $data)) {
+            return $data['mweb_url'].'&redirect_url='.urlencode((string)$redirect_url);
+        }
+        throw new \Exception('unkown');
+    }
+
+    /**
      * 公众号支付 在微信浏览器里面打开H5网页中执行JS调起支付。接口输入输出数据格式为JSON。
      * https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=7_7&index=6
      * @param array $args
