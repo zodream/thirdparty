@@ -132,7 +132,9 @@ abstract class BaseALi extends ThirdParty {
         }
         $data[$this->signKey] = $this->sign($data);
         $url = new Uri($this->baseUrl);
-        return $this->httpPost($url, $data);;
+        return $this->httpPost($url, $data);
+        //需要注意中文转化，不然json_decode 解码不了
+        //$args = iconv('gbk', 'utf-8', $args);
     }
 
     /**
