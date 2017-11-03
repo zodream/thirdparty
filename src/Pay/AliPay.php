@@ -99,6 +99,41 @@ class AliPay extends BasePay {
                 'goods_type'
             ]
         ],
+        'wapPay' => [
+            'https://mapi.alipay.com/gateway.do', // 即时支付
+            [
+                'service' => 'alipay.wap.create.direct.pay.by.user',
+                '#partner',
+                '_input_charset' => 'utf-8',
+                'sign_type' => 'MD5', //DSA、RSA、MD5
+                'sign',
+                'notify_url',
+                'return_url',
+                '#out_trade_no',
+                '#subject',
+                'payment_type' => 1,
+                '#total_fee', // 2位小数
+                '#seller_id',
+
+                'body',
+                'show_url',
+                'extern_token',
+                'otherfee',
+                'airticket',
+                'rn_check',
+                'buyer_cert_no',
+                'it_b_pay' => '1h',
+                'buyer_real_name',
+                'scene',
+                'hb_fq_param',
+                'app_pay',
+                'promo_param',
+                'enable_paymethod',
+                'goods_type',
+                'extend_params',
+                'ext_user_info'
+            ]
+        ],
         'pay' => [
             'https://openapi.alipay.com/gateway.do',
             [
@@ -525,7 +560,13 @@ class AliPay extends BasePay {
      */
     public function getWebPayUrl($arg = array()) {
         $uri = new Uri();
-        return $uri->decode($this->getMap('pay')[0])
+        return $uri->decode($this->getMap('webPay')[0])
             ->setData($this->getSignData('webPay', $arg));
+    }
+
+    public function getWapPayUrl($arg = array()) {
+        $uri = new Uri();
+        return $uri->decode($this->getMap('wapPay')[0])
+            ->setData($this->getSignData('wapPay', $arg));
     }
 }
