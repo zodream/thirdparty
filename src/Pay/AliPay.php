@@ -126,7 +126,7 @@ class AliPay extends BasePay {
                 'buyer_real_name',
                 'scene',
                 'hb_fq_param',
-                'app_pay',
+                'app_pay' => 'Y',
                 'promo_param',
                 'enable_paymethod',
                 'goods_type',
