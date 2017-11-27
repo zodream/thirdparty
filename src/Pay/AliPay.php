@@ -210,6 +210,26 @@ class AliPay extends BasePay {
                 'extern_token',
                 'promo_params'
             ]
+        ],
+        'declareOrder' => [
+            'https://mapi.alipay.com/gateway.do',
+            [
+                'service' => 'alipay.acquire.customs',
+                '#partner',
+                '_input_charset' => 'UTF-8',
+                'sign_type' => 'MD5',
+                'sign',
+                '#out_request_no',
+                '#trade_no',
+                '#merchant_customs_code',
+                '#amount',
+                '#customs_place',
+                '#merchant_customs_name',
+                'is_split',
+                'sub_out_biz_no',
+                'buyer_name',
+                'buyer_id_no'
+            ]
         ]
     ];
 
