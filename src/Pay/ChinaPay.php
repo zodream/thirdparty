@@ -79,6 +79,35 @@ class ChinaPay extends BasePay {
                 'Signature',
                 '#RemoteAddr'// => real_ip()
             ]
+        ],
+        'declareOrder' => [
+            'https://gateway.test.95516.com/gateway/api/backTransReq.do',
+            [
+                'version' => '5.1.0',		      //版本号
+                'encoding' => 'utf-8',		      //编码方式
+                'signMethod' => '01',		      //签名方法
+                'txnType' => '82',		          //交易类型
+                'txnSubType' => '00',		      //交易子类
+                'bizType' => '000000',		      //业务类型
+                'accessType' => '0',		      //接入类型
+                'channelType' => '07',		      //渠道类型
+                'currencyCode' => '156',          //交易币种，境内商户勿改
+
+                '#merId',		//商户代码，请改自己的测试商户号，此处默认取demo演示页面传递的参数
+                '#orderId',	//商户订单号，8-32位数字字母，不能含“-”或“_”，此处默认取demo演示页面传递的参数，可以自行定制规则
+                '#txnTime',	//订单发送时间，格式为YYYYMMDDhhmmss，取北京时间，此处默认取demo演示页面传递的参数
+                '#txnAmt',	//交易金额，单位分，此处默认取demo演示页面传递的参数
+                '#origOrderId',	//原交易订单号，取原消费/预授权完成的orderId
+                '#origTxnTime',	//原交易订单发送时间。取原消费/预授权完成的txnTime
+
+                '#customsData',     //海关信息域，按规范填写
+                'customerInfo' => [
+                    'certifTp' => '01', //证件类型，01-身份证
+                    '#certifId', //证件号，15位身份证不校验尾号，18位会校验尾号，请务必在前端写好校验代码
+                    '#customerNm', //姓名
+                ], //持卡人身份信息
+            ],
+            'POST'
         ]
     ];
 
@@ -175,19 +204,31 @@ class ChinaPay extends BasePay {
     }
 
     /**
+     * 数组转换成字符串
+     * @param array $args
+     * @return string
+     */
+    public function getEncodeArray(array $args) {
+        $data = [];
+        foreach ($args as $key => $item) {
+            $data[] = sprintf('%s=%s', urlencode($key), urlencode($item));
+        }
+        return sprintf('{%s}', implode('&', $data));
+    }
+
+    /**
      * 生成提交表单
      * @param array $args
      * @return string
      */
-    public function form(array $args) {
+    public function form(array $args, $buttonTip = '立即使用银联支付') {
         $args[$this->signKey] = $this->getSignData('form', $args);
 
         $button ='<form action="'.$this->apiMap['form'][0].'" method="POST" target="_blank">';// （这里action的内容为提交交易数据的URL地址）
         foreach ($args as $key => $item) {
             $button .= '<input type="hidden" name="'.$key.'" value="'.$item.'">';
         }
-        return $button.'<input type="submit" value="立即使用银联支付"/>
-       </form>';
+        return $button.'<input type="submit" value="'.$buttonTip.'"/></form>';
     }
 
     /**
