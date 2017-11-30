@@ -9,6 +9,7 @@ namespace Zodream\ThirdParty\Pay;
  */
 use Zodream\Disk\FileException;
 use Zodream\Http\Uri;
+use Zodream\Service\Factory;
 
 class AliPay extends BasePay {
 
@@ -267,7 +268,7 @@ class AliPay extends BasePay {
         //AES, 128 模式加密数据 CBC
         $screct_key = base64_decode($this->key);
         $str = trim($str);
-        $str = addPKCS7Padding($str);
+        $str = $this->addPKCS7Padding($str);
         $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC), 1);
         $encrypt_str =  mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $screct_key, $str, MCRYPT_MODE_CBC);
         return base64_encode($encrypt_str);
@@ -326,7 +327,7 @@ class AliPay extends BasePay {
         $res = openssl_get_publickey($this->publicKeyFile->read());
         $blocks = $this->splitCN($data, 0, 30, 'utf-8');
         $chrtext  = null;
-        $encodes  = array();
+        $encodes  = [];
         foreach ($blocks as $n => $block) {
             if (!openssl_public_encrypt($block, $chrtext , $res)) {
                 throw new \InvalidArgumentException(openssl_error_string());
@@ -338,7 +339,12 @@ class AliPay extends BasePay {
         return $chrtext;
     }
 
-    public function rsaDecrypt($data, $rsaPrivateKeyPem, $charset) {
+    /**
+     * @param $data
+     * @param $rsaPrivateKeyPem
+     * @return string
+     */
+    public function rsaDecrypt($data, $rsaPrivateKeyPem) {
         //读取私钥文件
         $priKey = file_get_contents($rsaPrivateKeyPem);
         //转换为openssl格式密钥
@@ -349,7 +355,6 @@ class AliPay extends BasePay {
         foreach ($decodes as $n => $decode) {
             if (!openssl_private_decrypt($decode, $dcyCont, $res)) {
                 throw new \InvalidArgumentException(openssl_error_string());
-                return '';
             }
             $strnull .= $dcyCont;
         }
@@ -377,7 +382,6 @@ class AliPay extends BasePay {
         }
         if (!$this->privateKeyFile->exist()) {
             throw new FileException('私钥文件不存在');
-            return '';
         }
         $res = openssl_get_privatekey($this->privateKeyFile->read());
         openssl_sign($content, $sign, $res,
@@ -420,13 +424,11 @@ class AliPay extends BasePay {
     protected function checkRsaByFile($content, $sign) {
         if (!$this->publicKeyFile->exist()) {
             throw new FileException('公钥文件不存在');
-            return false;
         }
         //转换为openssl格式密钥
         $res = openssl_get_publickey($this->publicKeyFile->read());
         if(!$res){
             throw new \InvalidArgumentException('公钥格式错误');
-            return false;
         }
         //调用openssl内置方法验签，返回bool值
         $result = (bool)openssl_verify($content, base64_decode($sign), $res,
@@ -449,7 +451,6 @@ class AliPay extends BasePay {
 
         if (!$res) {
             throw new \InvalidArgumentException('支付宝RSA公钥错误。请检查公钥文件格式是否正确');
-            return false;
         }
         return (bool)openssl_verify($content, base64_decode($sign), $res,
             $this->signType == self::RSA ? OPENSSL_ALGO_SHA1 : OPENSSL_ALGO_SHA256);
@@ -497,7 +498,7 @@ class AliPay extends BasePay {
      */
     public function queryOrder(array $args = array()) {
         $url = new Uri($this->apiMap['query'][0]);
-        $args = $this->json($this->httpGet($url->setData($this->getSignData('query', $args))));
+        $args = $this->httpGet($url->setData($this->getSignData('query', $args)));
         if (!array_key_exists('alipay_trade_query_response', $args)) {
             throw new \ErrorException('未知错误！');
         }
@@ -560,13 +561,13 @@ class AliPay extends BasePay {
         }
         $content = implode('&', $args);
         $data['sign'] = urlencode($this->sign($content));
-        return $content.'&sign='.'"'.$data['sign'].'"'.'&sign_type='.'"'.$data['sign_type'].'"';;
+        return $content.'&sign='.'"'.$data['sign'].'"'.'&sign_type='.'"'.$data['sign_type'].'"';
     }
 
     /**
      *  获取支付的网址
      * @param array $arg
-     * @return $this
+     * @return Uri
      */
     public function getPayUrl($arg = array()) {
         $uri = new Uri($this->getMap('pay')[0]);
@@ -588,5 +589,24 @@ class AliPay extends BasePay {
         $uri = new Uri();
         return $uri->decode($this->getMap('wapPay')[0])
             ->setData($this->getSignData('wapPay', $arg));
+    }
+
+    /**
+     * 报关
+     * @param array $args
+     * @return array|mixed
+     * @throws \ErrorException
+     */
+    public function declareOrder(array $args = array()) {
+        $url = new Uri($this->apiMap['query'][0]);
+        $args = $this->httpGet($url->setData($this->getSignData('declareOrder', $args)));
+        if ($args['result_code'] != 'SUCCESS') {
+            throw new \ErrorException($args['detail_error_des']);
+        }
+        if (!$this->verify($args)) {
+            throw new \InvalidArgumentException('数据验签失败！');
+        }
+        $this->set($args);
+        return $args;
     }
 }

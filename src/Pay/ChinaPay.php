@@ -219,6 +219,7 @@ class ChinaPay extends BasePay {
     /**
      * 生成提交表单
      * @param array $args
+     * @param string $buttonTip
      * @return string
      */
     public function form(array $args, $buttonTip = '立即使用银联支付') {
@@ -247,5 +248,29 @@ class ChinaPay extends BasePay {
             throw new Exception('支付失败');
         }
         return $args;
+    }
+
+    /**
+     * 报关
+     * @param array $args
+     * @return array|mixed
+     * @throws Exception
+     */
+    public function declareOrder(array $args = array()) {
+        $url = new Uri($this->apiMap['query'][0]);
+        $args = $this->httpGet($url->setData($this->getSignData('declareOrder', $args)));
+        // 签名和验签方法不一样，要改
+        if (!$this->verify($args)) {
+            throw new Exception('数据验签失败！');
+        }
+        if ($args['respCode'] != '01') {
+            return $args;
+        }
+        if ($args["respCode"] == "03"
+            || $args["respCode"] == "04"
+            || $args["respCode"] == "05") {
+            throw new Exception('处理超时，请稍后查询');
+        }
+        throw new Exception($args['respMsg']);
     }
 }

@@ -493,6 +493,7 @@ class WeChat extends BasePay {
      * @param array $args
      * @param string|Uri $redirect_url
      * @return string
+     * @throws \Exception
      */
     public function h5Pay(array $args = [], $redirect_url = null) {
         $args['trade_type'] = 'MWEB';
