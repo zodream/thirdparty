@@ -7,8 +7,8 @@ namespace Zodream\ThirdParty\Pay;
  * Date: 2016/8/18
  * Time: 19:07
  */
-use Zodream\Domain\Image\Image;
-use Zodream\Domain\Image\QrCode;
+use Zodream\Image\Image;
+use Zodream\Image\QrCode;
 use Zodream\Disk\File;
 use Zodream\Helpers\Str;
 use Zodream\Helpers\Xml;
