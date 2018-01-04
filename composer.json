@@ -17,7 +17,8 @@
         "zodream/zodream": "*",
         "zodream/helpers": "*",
         "zodream/http": "*",
-        "zodream/disk": "*"
+        "zodream/disk": "*",
+        "zodream/image" : "*"
     },
     "autoload": {
         "psr-4": {
