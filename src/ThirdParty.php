@@ -233,13 +233,27 @@ abstract class ThirdParty extends MagicObject {
         return $data;
     }
 
+    /**
+     * 修复
+     * @param $name
+     * @param array $args
+     * @return mixed|null|string
+     */
     protected function getXml($name, $args = array()) {
         $this->http->setXmlDecoder(Xml::class.'::specialDecode');
-        return $this->getByApi($name, $args);
+        $data = $this->getByApi($name, $args);
+        return is_string($data) ? Xml::specialDecode($data) : $data;
     }
 
+    /**
+     * 修复无法自动判断响应头
+     * @param $name
+     * @param array $args
+     * @return mixed|null|string
+     */
     protected function getJson($name, $args = array()) {
-        return $this->getByApi($name, $args);
+        $data = $this->getByApi($name, $args);
+        return is_string($data) ? Json::decode($data) : $data;
     }
 
     /**
