@@ -2,92 +2,99 @@
 namespace Zodream\ThirdParty\API;
 
 use Zodream\ThirdParty\ThirdParty;
+use Zodream\Http\Http;
 
 class Common extends ThirdParty  {
 
-    protected $apiMap = array(
-        'weather' => array(
-            'http://op.juhe.cn/onebox/weather/query',
-            array(
+    /**
+     * 获取天气情况
+     * @return Http
+     */
+    public function getWeather() {
+        return $this->getHttp()
+            ->url('http://op.juhe.cn/onebox/weather/query', [
                 '#cityname',
                 '#key',
-                'dtype' // 返回数据的格式,xml或json，默认json 
-            )
-        ),
-        'webscan' => array(
-            'http://apis.juhe.cn/webscan/',
-            array(
+                'dtype' // 返回数据的格式,xml或json，默认json
+            ]);
+    }
+
+    /**
+     * 站点扫描
+     * @return Http
+     */
+    public function getWebscan() {
+        return $this->getHttp()
+            ->url('http://apis.juhe.cn/webscan/', [
                 '#domain',
                 'dtype' => 'json',  //返回类型,xml/json/jsonp可选
                 'callback',
                 '#key'
-            )
-        ),
-        'exchange1' => array(
-            'http://op.juhe.cn/onebox/exchange/query',
-            array(
-                '#key'
-            )
-        ),
-        'wooyun' => array(
-            'http://op.juhe.cn/wooyun/index',
-            array(
+            ]);
+    }
+
+    public function getWooyun() {
+        return $this->getHttp()
+            ->url('http://op.juhe.cn/wooyun/index', [
                 '#key',
-                'type',   // 查询方式，可选值为submit、confirm、public、unclaim，不提供则默认为查询最新的漏洞 
+                'type',   // 查询方式，可选值为submit、confirm、public、unclaim，不提供则默认为查询最新的漏洞
                 'limit',
                 'dtype' //json或xml，默认为json
-            )
-        ),
-        'ip' => array(
-            'http://apis.juhe.cn/ip/ip2addr',
-            array(
+            ]);
+    }
+
+    public function getIp() {
+        return $this->getHttp()
+            ->url('http://apis.juhe.cn/ip/ip2addr', [
                 '#key',
                 '#ip',
                 'dtype' //json xml
-            )
-        ),
-        'kuaidi' => array(
-            'http://api.kuaidi100.com/api',
-            array(
+            ]);
+    }
+
+    public function getKuaidi($isCompany = false) {
+        if ($isCompany) {
+            return $this->getHttp('http://poll.kuaidi100.com/poll/query.do')
+                ->maps([
+                    '#customer',
+                    'sign',
+                    '#param'
+                ]);
+        }
+        return $this->getHttp()
+            ->url('http://api.kuaidi100.com/api', [
                 '#id',
                 '#com', //公司编码
                 '#nu',
-                'show',  //0：返回json字符串， 1：返回xml对象， 2：返回html对象， 3：返回text文本。 
+                'show',  //0：返回json字符串， 1：返回xml对象， 2：返回html对象， 3：返回text文本。
                 'muti',  //1:返回多行完整的信息， 0:只返回一行信息。 不填默认返回多行。
-                'order'   //desc：按时间由新到旧排列， asc：按时间由旧到新排列。 不填默认返回倒序（大小写不敏感） 
-            )
-        ),
-        'kuaidi100' => [ // 企业版
-            'http://poll.kuaidi100.com/poll/query.do',
-            [
-                '#customer',
-                'sign',
-                '#param'
-            ],
-            'POST'
-        ],
-        'exchange' => array(
-            'http://apis.baidu.com/apistore/currencyservice/currency',
-            array(
+                'order'   //desc：按时间由新到旧排列， asc：按时间由旧到新排列。 不填默认返回倒序（大小写不敏感）
+            ]);
+    }
+
+    public function getExchange() {
+        return $this->getHttp()
+            ->url('http://apis.baidu.com/apistore/currencyservice/currency', [
                 '#fromCurrency',
                 '#toCurrency',
                 '#amount'
-            )
-        ),
-        'sinaIP' => array(
-            'http://int.dpool.sina.com.cn/iplookup/iplookup.php',
-            array(
-                'format' => 'json',
-                'ip'
-            )
-        ),
-        'taoBaoIP' => array(
-            'http://ip.taobao.com/service/getIpInfo.php',
-            array(
+            ]);
+    }
+
+    public function getSinaIp() {
+        return $this->getHttp()
+            ->url('http://int.dpool.sina.com.cn/iplookup/iplookup.php', [
+                    'format' => 'json',
+                    'ip'
+                ]);
+    }
+
+    public function getTaoBaoIp() {
+        return $this->getHttp()
+            ->url('http://ip.taobao.com/service/getIpInfo.php', [
                 '#ip'
-            )
-        )
-    );
+            ]);
+    }
 
 
     /**
@@ -96,23 +103,25 @@ class Common extends ThirdParty  {
      * @param string $to
      * @param int $amount
      * @return array
+     * @throws \Exception
      */
     public function exchange($from, $to, $amount = 1) {
-        $this->http->setHeader('apikey', $this->get('apikey'));
-        return $this->getJson('exchange', array(
+        return $this->getExchange()->setHeader([
+            'apikey' => $this->get('apikey')
+        ])->parameters([
             'fromCurrency' => $from,
             'toCurrency' => $to,
             'amount' => $amount
-        ));
+        ])->json();
     }
 
     public function getAddressByIp($ip = null) {
         if (empty($ip)) {
-            return $this->getJson('sinaIP');
+            return $this->getSinaIp()->text();
         }
-        return $this->getJson('taoBaoIP', array(
+        return $this->getTaoBaoIp()->parameters([
             'ip' => $ip
-        ));
+        ])->text();
     }
 
     public function kuaiDi100(array $data) {
@@ -128,7 +137,7 @@ class Common extends ThirdParty  {
         }
         $param = json_encode($param);
         $sign = strtoupper(md5($param.$data['key'].$data['customer']));
-        return $this->getJson('kuaidi100', [
+        return $this->getKuaidi(true)->parameters([
             'customer' => $data['customer'],
             'sign' => $sign,
             'param' => $param

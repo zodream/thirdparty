@@ -21,53 +21,48 @@ class IHuYi extends ThirdParty  {
 
     protected $configKey = 'sms';
 
-    protected $apiMap = array(
-        'url' => array(
-            array(
-                'http://106.ihuyi.cn/webservice/sms.php',
-                array(
-                    'format' => 'json',
-                    '#method'
-                )
-            ),
-            array(
+    protected $_data = array(
+        'template' => '您的验证码是：{code}。请不要把验证码泄露给其他人。'
+    );
+
+    public function getSend() {
+        return $this->getHttp()
+            ->url('http://106.ihuyi.cn/webservice/sms.php', [
+                'format' => 'json',
+                '#method'
+            ])->maps([
                 '#account',
                 '#password',
                 'mobile',
                 'content'
-            ), 
-            'post'
-        )
-    );
-
-    protected $_data = array(
-        'template' => '您的验证码是：{code}。请不要把验证码泄露给其他人。'
-    );
+            ]);
+    }
 
     /**
      * 发送短信
      * @param $mobile
      * @param $content
      * @return bool
-     * @throws \ErrorException
+     * @throws \Exception
      */
     public function send($mobile, $content) {
-        $data = $this->getJson('url', array(
+        $data = $this->getSend()->parameters([
             'mobile' => $mobile,
             'content' => $content,
             'method' => 'Submit'
-        ));
+        ])->json();
         if ($data['code'] == 2) {
             return $data['smsid'];
         }
-        //$this->errorNo = $data['code'];
-        throw new \ErrorException($data['msg']);
+        throw new \Exception($data['msg']);
     }
+
     /**
      * 发送验证短信
      * @param string|integer $mobile
      * @param string|integer $code
      * @return bool|integer false|短信ID
+     * @throws \Exception
      */
     public function sendCode($mobile, $code) {
         return $this->send($mobile, str_replace('{code}', $code, $this->get('template')));
@@ -76,15 +71,15 @@ class IHuYi extends ThirdParty  {
     /**
      * 余额查询
      * @return bool|int
-     * @throws \ErrorException
+     * @throws \Exception
      */
     public function balance() {
-        $data = $this->getJson('url', array(
+        $data = $this->getSend()->parameters([
             'method' => 'GetNum'
-        ));
+        ])->json();
         if ($data['code'] == 2) {
             return $data['num'];
         }
-        throw new \ErrorException($data['msg']);
+        throw new \Exception($data['msg']);
     }
 }

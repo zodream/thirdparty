@@ -10,6 +10,7 @@ namespace Zodream\ThirdParty\OAuth;
  *
  */
 use Zodream\Helpers\Json;
+use Zodream\Http\Http;
 
 class QQ extends BaseOAuth {
 
@@ -24,10 +25,9 @@ class QQ extends BaseOAuth {
      */
     protected $configKey = 'qq';
 
-    protected $apiMap = array(
-        'login' => array(
-            'https://graph.qq.com/oauth2.0/authorize',
-            array(
+    public function getLogin() {
+        return $this->getHttp()
+            ->url('https://graph.qq.com/oauth2.0/authorize', [
                 'response_type' => 'code',
                 '#client_id',
                 '#redirect_uri',
@@ -35,41 +35,50 @@ class QQ extends BaseOAuth {
                 'scope',
                 'display',
                 'g_ut'
-            )
-        ),
-        'access' => array(
-            'https://graph.qq.com/oauth2.0/token',
-            array(
+            ]);
+    }
+
+    public function getAccess() {
+        return $this->getHttp()
+            ->url('https://graph.qq.com/oauth2.0/token', [
                 'grant_type' => 'authorization_code',
                 '#client_id',
                 '#client_secret',
                 '#code',
                 '#redirect_uri'
-            )
-        ),
-        // 自动续期
-        'refresh' => array(
-            'https://graph.qq.com/oauth2.0/token',
-            array(
-                'grant_type' => 'refresh_token',
-                '#client_id',
-                '#client_secret',
-                '#refresh_token'
-            )
-        ),
-        'openid' => array(
-            'https://graph.qq.com/oauth2.0/me',
-            '#access_token'
-        ),
-        'info' => [
-            'https://graph.qq.com/user/get_user_info',
-            [
-                '#client_id:oauth_consumer_key',
-                '#openid',
+            ]);
+    }
+
+    /**
+     * 自动续期
+     * @return Http
+     */
+    public function getRefresh() {
+        return $this->getHttp()
+            ->url('https://graph.qq.com/oauth2.0/token',
+                [
+                    'grant_type' => 'refresh_token',
+                    '#client_id',
+                    '#client_secret',
+                    '#refresh_token'
+                ]);
+    }
+
+    public function getOpenid() {
+        return $this->getHttp()
+            ->url('https://graph.qq.com/oauth2.0/me', [
                 '#access_token'
-            ]
-        ]
-    );
+            ]);
+    }
+
+    public function getInfo() {
+        return $this->getHttp()
+            ->url('https://graph.qq.com/user/get_user_info', [
+                    '#client_id:oauth_consumer_key',
+                    '#openid',
+                    '#access_token'
+                ]);
+    }
 
     /**
      * @param string $name
@@ -151,7 +160,7 @@ class QQ extends BaseOAuth {
     is_yellow_year_vip	标识是否为年费黄钻用户（0：不是； 1：是）
      * @return array|false
      */
-    public function getInfo() {
+    public function info() {
         $user = $this->getJson('info');
         if (!is_array($user) || !array_key_exists('nickname', $user)) {
             return false;

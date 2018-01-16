@@ -7,11 +7,8 @@ namespace Zodream\ThirdParty;
  * Date: 2016/5/13
  * Time: 11:44
  */
-use Zodream\Domain\Filter\Filters\RequiredFilter;
-use Zodream\Helpers\Json;
 use Zodream\Helpers\Str;
-use Zodream\Helpers\Xml;
-use Zodream\Http\Curl;
+use Zodream\Http\Http;
 use Zodream\Infrastructure\Base\MagicObject;
 use Zodream\Http\Uri;
 use Zodream\Service\Factory;
@@ -23,25 +20,7 @@ abstract class ThirdParty extends MagicObject {
      */
     protected $configKey;
 
-    const GET = 'GET';
-    const POST = 'POST';
-
-    /**
-     *
-     * ['url']
-     * ['url', ['a', '#b', 'c' => 'd']]
-     * [[url, ['a'], true], ['b'], 'post']
-     * @var array
-     */
-    protected $apiMap = array();
-
-    /**
-     * @var Curl
-     */
-    protected $http;
-
     public function __construct($config = array()) {
-        $this->http = new Curl();
         if (empty($config)) {
             $this->set(Factory::config($this->configKey));
             return;
@@ -63,223 +42,45 @@ abstract class ThirdParty extends MagicObject {
     }
 
     /**
-     * 设置
+     * 生成新的请求
+     * @param Uri|string $url
+     * @return Http
+     */
+    public function getHttp($url = null) {
+        return new Http($url);
+    }
+
+    /**
      * @param $name
-     * @param null $map
-     * @return $this
+     * @param array ...$args
+     * @return mixed|null
+     * @throws \Exception
      */
-    public function setMap($name, $map = null) {
-        if (!is_array($name)) {
-            $name = [
-                $name => $map
-            ];
+    public function invoke($name, ...$args) {
+        if (method_exists($this, $name)) {
+            return $this->{$name}(...$args);
         }
-        $this->apiMap = array_merge($this->apiMap, $name);
-        return $this;
-    }
-
-    /**
-     * GET MAP BY NAME
-     * @param string $name
-     * @return array
-     */
-    public function getMap($name) {
-        if (!array_key_exists($name, $this->apiMap)){
-            throw new \InvalidArgumentException('API NOT EXIST!');
+        $method = 'get'.Str::studly($name);
+        if (method_exists($this, $method)) {
+            throw new \Exception('error api '.$name);
         }
-        return $this->apiMap[$name];
-    }
-
-    protected function httpGet($url) {
-        $args = $this->http->get($url);
-        Factory::log()->info(sprintf('HTTP GET %s => %s', $url, $this->http->rawResponse));
-        return $args;
-    }
-
-    protected function httpPost($url, $data) {
-        $args = $this->http->post($url, $data);
-        Factory::log()->info(sprintf('HTTP POST %s + %s => %s', $url,
-            is_array($data) ? Json::encode($data) : $data, $this->http->rawResponse));
-        return $args;
-    }
-
-    /**
-     * @param string $name
-     * @param array $args
-     * @return mixed|null|string
-     */
-    protected function getByApi($name, $args = array()) {
-        $args += $this->get();
-        $map = $this->getMap($name);
-        $url = new Uri();
-        if (is_array($map[0])) {
-            return $this->httpPost(
-                $url->decode($map[0][0])
-                    ->addData($this->getData((array)$map[0][1], $args)),
-                $this->getPostData($name, $args)
-            );
-        }
-        $url->decode($map[0]);
-        if (count($map) != 3 || strtoupper($map[2]) != self::POST) {
-            return $this->httpGet($url->addData($this->getData((array)$map[1], $args)));
-        }
-        return $this->httpPost($url,
-            $this->getPostData($name, $args));
-    }
-
-
-    /**
-     * GET URL THAT METHOD IS GET
-     * @param string $name
-     * @param array $args
-     * @return Uri
-     */
-    protected function getUrl($name, array $args = array()) {
-        $map = $this->getMap($name);
-        $args += $this->get();
-        $uri = new Uri();
-        if (is_array($map[0])) {
-            return $uri->decode($map[0][0])
-                ->addData($this->getData((array)$map[0][1], $args));
-        }
-        $uri->decode($map[0]);
-        if (count($map) != 3 || strtoupper($map[2]) != self::POST) {
-            $uri->addData($this->getData((array)$map[1], $args));
-        }
-        return $uri;
-    }
-
-    /**
-     * GET POST DATA
-     * @param string $name
-     * @param array $args
-     * @return array|string
-     * @internal param array $data
-     */
-    protected function getPostData($name, array $args) {
-        $map = $this->getMap($name);
-        if (!is_array($map) || count($map) < 2) {
-            return array();
-        }
-        return $this->getData((array)$map[1], $args);
-    }
-
-    /**
-     * 获取值 根据 #区分必须  $key => $value 区分默认值
-     * 支持多选 键必须为 数字， 支持多级 键必须为字符串
-     * @param array $keys
-     * @param array $args
-     * @return array
-     */
-    protected function getData(array $keys, array $args) {
-        $data = array();
-        foreach ($keys as $key => $item) {
-            $data = array_merge($data,
-                $this->getDataByKey($key, $item, $args));
-        }
-        return $data;
-    }
-
-    /**
-     * 获取一个值
-     * @param $key
-     * @param $item
-     * @param array $args
-     * @return array
-     */
-    protected function getDataByKey($key, $item, array $args) {
-        if (is_array($item)) {
-            $item = $this->chooseData($item, $args);
-        }
-        if (is_integer($key)) {
-            if (is_array($item)) {
-                return $item;
-            }
-            $key = $item;
-            $item = null;
-        }
-        $need = false;
-        if (strpos($key, '#') === 0) {
-            $key = substr($key, 1);
-            $need = true;
-        }
-        $keyTemp = explode(':', $key, 2);
-        if (array_key_exists($keyTemp[0], $args)) {
-            $item = $args[$keyTemp[0]];
-        }
-        if ($this->isEmpty($item)) {
-            if ($need) {
-                throw  new \InvalidArgumentException($keyTemp[0].' IS NEED!');
-            }
-            return [];
-        }
-        if (count($keyTemp) > 1) {
-            $key = $keyTemp[1];
-        }
-        return [$key => $item];
-    }
-
-    /**
-     * MANY CHOOSE ONE
-     * @param array $item
-     * @param array $args
-     * @return array
-     */
-    protected function chooseData(array $item, array $args) {
-        $data = $this->getData($item, $args);
-        if (empty($data)) {
-            throw new \InvalidArgumentException('ONE OF MANY IS NEED!');
-        }
-        return $data;
-    }
-
-    /**
-     * 修复
-     * @param $name
-     * @param array $args
-     * @return mixed|null|string
-     */
-    protected function getXml($name, $args = array()) {
-        $this->http->setXmlDecoder(Xml::class.'::specialDecode');
-        $data = $this->getByApi($name, $args);
-        return is_string($data) ? Xml::specialDecode($data) : $data;
-    }
-
-    /**
-     * 修复无法自动判断响应头
-     * @param $name
-     * @param array $args
-     * @return mixed|null|string
-     */
-    protected function getJson($name, $args = array()) {
-        $data = $this->getByApi($name, $args);
-        return is_string($data) ? Json::decode($data) : $data;
-    }
-
-    /**
-     * CHECK IS EMPTY
-     * @param $value
-     * @return bool
-     */
-    protected function isEmpty($value) {
-        $filter = new RequiredFilter();
-        return !$filter->validate($value);
+        $args = array_merge($this->get(), $args);
+        /** @var Http $http */
+        $http = $this->{$method}(...$args);
+        return $http->text();
     }
 
     /**
      * _call
      * 魔术方法，做api调用转发
-     * @param string $name    调用的方法名称
-     * @param array $arg      参数列表数组
-     * @since 5.0
+     * @param string $name 调用的方法名称
+     * @param $args
      * @return array          返加调用结果数组
+     * @throws \Exception
+     * @since 5.0
      */
-    public function __call($name, $arg) {
-        $method = 'get'.Str::studly($name);
-        if (method_exists($this, $method)) {
-            return call_user_func_array([$this, $method], $arg);
-        }
-        return $this->getByApi($name, isset($arg[0]) ? $arg[0] : array());
+    public function __call($name, $args) {
+        return $this->invoke($name, ...$args);
     }
 
     public static function __callStatic($method, $parameters) {
