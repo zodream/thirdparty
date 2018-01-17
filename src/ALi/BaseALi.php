@@ -2,6 +2,7 @@
 namespace Zodream\ThirdParty\ALi;
 
 use Zodream\Domain\Filter\Filters\RequiredFilter;
+use Zodream\Helpers\Json;
 use Zodream\Http\Http;
 use Zodream\ThirdParty\ThirdParty;
 use Zodream\Disk\File;
@@ -91,7 +92,13 @@ abstract class BaseALi extends ThirdParty {
                 return $data;
             })->parameters($this->get())->parameters([
                 'timestamp' => date('Y-m-d H:i:s')
-            ]);
+            ])->decode(function ($data) {
+                $data = Json::decode($data);
+                if ($this->verify($data)) {
+                    return reset($data);
+                }
+                throw new \Exception('结果验证失败！');
+            });
     }
 
     /**
@@ -211,6 +218,7 @@ abstract class BaseALi extends ThirdParty {
      * @param array $params
      * @param string $sign
      * @return bool
+     * @throws \Exception
      */
     public function verify(array $params, $sign = null) {
         if (is_null($sign)) {

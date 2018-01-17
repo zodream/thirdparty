@@ -14,8 +14,8 @@ class Search extends ThirdParty {
         return $this->getHttp()
             ->url('http://data.zz.baidu.com/urls')
             ->maps([
-                '!site',
-                '!token'
+                '#site',
+                '#token'
             ]);
     }
 

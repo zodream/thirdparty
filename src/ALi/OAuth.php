@@ -32,8 +32,7 @@ class OAuth extends BaseALi {
                 'code' => $code,
             ];
         }
-        $args = $this->getToken()->parameters($code)->json();
-        return reset($args);
+        return $this->getToken()->parameters($code)->text();
     }
 
     /**
@@ -43,9 +42,8 @@ class OAuth extends BaseALi {
      * @throws \Exception
      */
     public function info($token) {
-        $args = $this->getInfo()->parameters([
+        return $this->getInfo()->parameters([
             'auth_token' => $token
-        ])->json();
-        return reset($args);
+        ])->text();
     }
 }

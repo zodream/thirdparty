@@ -29,6 +29,7 @@ class Microsoft extends ThirdParty  {
      * 颜值测试
      * @param string $img base64_encode
      * @return array
+     * @throws \Exception
      */
     public function faceScore($img) {
         /**
