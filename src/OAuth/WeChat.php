@@ -2,6 +2,7 @@
 namespace Zodream\ThirdParty\OAuth;
 
 use Zodream\Helpers\Str;
+use Zodream\Http\Http;
 use Zodream\Service\Factory;
 
 /**
@@ -23,55 +24,44 @@ class WeChat extends BaseOAuth {
      */
     protected $configKey = 'wechat';
 
-    protected $apiMap = array(
-       'login' => array(
-           'https://open.weixin.qq.com/connect/qrconnect',
-           array(
-               '#appid',
-               '#redirect_uri',
-               'response_type' => 'code',
-               'scope' => 'snsapi_login',
-               'state'
-           )
-       ),
-        'webLogin' => [
-            'http://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js',
-            [
-                'id' => 'login_container',
+    public function getLogin() {
+        return $this->getBaseHttp()
+            ->url('https://open.weixin.qq.com/connect/qrconnect', [
                 '#appid',
-                'scope' => 'snsapi_login',
                 '#redirect_uri',
-                '#state',
-                'style' => 'black',
-                'href'
-            ]
-        ],
-        'access' => array(
-            'https://api.weixin.qq.com/sns/oauth2/access_token',
-            array(
+                'response_type' => 'code',
+                'scope' => 'snsapi_login',
+                'state'
+            ]);
+    }
+
+    public function getAccess() {
+        return $this->getBaseHttp()
+            ->url('https://api.weixin.qq.com/sns/oauth2/access_token', [
                 '#appid',
                 '#secret',
                 '#code',
                 'grant_type' => 'authorization_code'
-            )
-        ),
-        'refresh' => array(
-            'https://api.weixin.qq.com/sns/oauth2/refresh_token',
-            array(
+            ]);
+    }
+
+    public function getRefresh() {
+        return $this->getBaseHttp()
+            ->url('https://api.weixin.qq.com/sns/oauth2/refresh_token', [
                 '#appid',
                 'grant_type' => 'refresh_token',
                 '#refresh_token'
-            )
-        ),
-        'info' => array(
-            'https://api.weixin.qq.com/sns/userinfo',
-            array(
+            ]);
+    }
+
+    public function getInfo() {
+        return $this->getBaseHttp()
+            ->url('https://api.weixin.qq.com/sns/userinfo', [
                 '#access_token',
                 '#openid',
                 'lang'
-            )
-        )
-    );
+            ]);
+    }
 
     /**
      * @return array|false
@@ -88,7 +78,7 @@ class WeChat extends BaseOAuth {
          * scope	用户授权的作用域，使用逗号（,）分隔
          * unionid	当且仅当该网站应用已获得该用户的userinfo授权时，才会出现该字段。
          */
-        $access = $this->getJson('access');
+        $access = $this->getAccess()->json();
         if (!is_array($access) || !array_key_exists('access_token', $access)) {
             return false;
         }
@@ -97,7 +87,7 @@ class WeChat extends BaseOAuth {
         return $access;
     }
     
-    public function getInfo() {
+    public function info() {
         /**
          * openid	普通用户的标识，对当前开发者帐号唯一
         nickname	普通用户昵称
@@ -109,7 +99,7 @@ class WeChat extends BaseOAuth {
         privilege	用户特权信息，json数组，如微信沃卡用户为（chinaunicom）
         unionid	用户统一标识。针对一个微信开放平台帐号下的应用，同一用户的unionid是唯一的。
          */
-        $user = $this->getJson('info');
+        $user = $this->getInfo()->json();
         if (!is_array($user) || !array_key_exists('nickname', $user)) {
             return false;
         }
@@ -125,10 +115,17 @@ class WeChat extends BaseOAuth {
         $state = Str::randomNumber(7);
         Factory::session()->set('state', $state);
         $this->set('state', $state);
-        $url = $this->apiMap['webLogin'][0];
-        $data = json_encode($this->getData($this->apiMap['webLogin'][1], $this->merge($args)));
+        $data = json_encode(Http::getMapParameters([
+            'id' => 'login_container',
+            '#appid',
+            'scope' => 'snsapi_login',
+            '#redirect_uri',
+            '#state',
+            'style' => 'black',
+            'href'
+        ], $this->merge($args)));
         return <<<HTML
-<script src="{$url}"></script>
+<script src="http://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"></script>
 <script>
 var obj = new WxLogin({$data});
 </script>

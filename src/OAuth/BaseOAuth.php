@@ -26,6 +26,11 @@ abstract class BaseOAuth extends ThirdParty  {
 
     protected $codeKey = 'code';
 
+    public function getBaseHttp($url = null) {
+        return $this->getHttp($url)
+            ->parameters($this->get());
+    }
+
     /**
      * @return Http
      */
@@ -56,12 +61,12 @@ abstract class BaseOAuth extends ThirdParty  {
         $state = Str::randomNumber(7);
         Factory::session()->set('state', $state);
         $this->set('state', $state);
-        return $this->getLogin()->parameters($this->get())->getUrl();
+        return $this->getLogin()->getUrl();
     }
 
     /**
      * 获取用户信息
      * @return array
      */
-    public abstract function getInfo();
+    public abstract function info();
 }

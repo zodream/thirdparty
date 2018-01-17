@@ -2,6 +2,7 @@
 namespace Zodream\ThirdParty\Pay;
 
 use Exception;
+use Zodream\Http\Http;
 
 /**
  * 银联电子支付
@@ -44,79 +45,16 @@ class ChinaPay extends BasePay {
         'CertId'
     ];
 
-    protected $apiMap = [
-        'form' => [
-            'https://payment.chinapay.com/CTITS/service/rest/page/nref/000000000017/0/0/0/0/0',
-            [
-                'Version' => '20140728',
-                'AccessType',// => '0',
-                'InstuId',
-                'AcqCode',
-                '#MerId',
-                '#MerOrderNo',
-                '#TranDate',// => date('Ymd'),
-                '#TranTime',// => date('His'),
-                '#OrderAmt',// => $order['order_amount'] * 100, 以分为单位
-                'TranType' => '0001',  //0001个人网银支付 0002企业网银支付 0003授信交易 0004快捷支付 0005账单支付、 ChinaPay手机控件支付 0006认证支付 0007分期付款 0008后台支付 0201预授权交易
-                
-                'BusiType' => '0001',
-                'CurryNo',// => 'CNY',
-                'SplitType', //0001：实时分账 0002：延时分账
-                'SplitMethod', //0：按金额分账 1：按比例分账
-                'MerSplitMsg',
-                'BankInstNo',
-
-                '#MerPageUrl',// => $pageUrl,
-                '#MerBgUrl',// => $bgUrl,
-                'CommodityMsg',
-
-                'MerResv' => 'chinapay',
-                'TranReserved',
-                'CardTranData',
-                'PayTimeOut',
-                'TimeStamp', // YmdHis
-                'RiskData',
-                'Signature',
-                '#RemoteAddr'// => real_ip()
-            ]
-        ],
-        'declareOrder' => [
-            'https://gateway.test.95516.com/gateway/api/backTransReq.do',
-            [
-                'version' => '5.1.0',		      //版本号
-                'encoding' => 'utf-8',		      //编码方式
-                'signMethod' => '01',		      //签名方法
-                'txnType' => '82',		          //交易类型
-                'txnSubType' => '00',		      //交易子类
-                'bizType' => '000000',		      //业务类型
-                'accessType' => '0',		      //接入类型
-                'channelType' => '07',		      //渠道类型
-                'currencyCode' => '156',          //交易币种，境内商户勿改
-
-                '#merId',		//商户代码，请改自己的测试商户号，此处默认取demo演示页面传递的参数
-                '#orderId',	//商户订单号，8-32位数字字母，不能含“-”或“_”，此处默认取demo演示页面传递的参数，可以自行定制规则
-                '#txnTime',	//订单发送时间，格式为YYYYMMDDhhmmss，取北京时间，此处默认取demo演示页面传递的参数
-                '#txnAmt',	//交易金额，单位分，此处默认取demo演示页面传递的参数
-                '#origOrderId',	//原交易订单号，取原消费/预授权完成的orderId
-                '#origTxnTime',	//原交易订单发送时间。取原消费/预授权完成的txnTime
-
-                '#customsData',     //海关信息域，按规范填写
-                'customerInfo' => [
-                    'certifTp' => '01', //证件类型，01-身份证
-                    '#certifId', //证件号，15位身份证不校验尾号，18位会校验尾号，请务必在前端写好校验代码
-                    '#customerNm', //姓名
-                ], //持卡人身份信息
-            ],
-            'POST'
-        ]
-    ];
-
     public function __construct(array $config = array()) {
         parent::__construct($config);
         $this->password = $this->get('password', '');
         $this->init();
     }
 
+    /**
+     * @return array
+     * @throws Exception
+     */
     public function init() {
         if (!empty($this->privateKey)) {
             return $this->privateKey;
@@ -149,6 +87,35 @@ class ChinaPay extends BasePay {
         $this->publicCERCertId = $certdata['serialNumber'];
     }
 
+    public function getDeclareOrder() {
+        return $this->getBaseHttp('https://gateway.test.95516.com/gateway/api/backTransReq.do')
+            ->maps([
+                'version' => '5.1.0',		      //版本号
+                'encoding' => 'utf-8',		      //编码方式
+                'signMethod' => '01',		      //签名方法
+                'txnType' => '82',		          //交易类型
+                'txnSubType' => '00',		      //交易子类
+                'bizType' => '000000',		      //业务类型
+                'accessType' => '0',		      //接入类型
+                'channelType' => '07',		      //渠道类型
+                'currencyCode' => '156',          //交易币种，境内商户勿改
+
+                '#merId',		//商户代码，请改自己的测试商户号，此处默认取demo演示页面传递的参数
+                '#orderId',	//商户订单号，8-32位数字字母，不能含“-”或“_”，此处默认取demo演示页面传递的参数，可以自行定制规则
+                '#txnTime',	//订单发送时间，格式为YYYYMMDDhhmmss，取北京时间，此处默认取demo演示页面传递的参数
+                '#txnAmt',	//交易金额，单位分，此处默认取demo演示页面传递的参数
+                '#origOrderId',	//原交易订单号，取原消费/预授权完成的orderId
+                '#origTxnTime',	//原交易订单发送时间。取原消费/预授权完成的txnTime
+
+                '#customsData',     //海关信息域，按规范填写
+                'customerInfo' => [
+                    'certifTp' => '01', //证件类型，01-身份证
+                    '#certifId', //证件号，15位身份证不校验尾号，18位会校验尾号，请务必在前端写好校验代码
+                    '#customerNm', //姓名
+                ], //持卡人身份信息
+            ])->encode([$this, 'encodeSign']);
+    }
+
     /**
      * 签名
      * @param array|string $content
@@ -174,7 +141,7 @@ class ChinaPay extends BasePay {
         ksort($params);
         $args = [];
         foreach ($params as $key => $item) {
-            if ($this->isEmpty($item)
+            if (Http::isEmpty($item)
                 || in_array($key, $this->ignoreKeys)
             ) {
                 continue;
@@ -223,10 +190,41 @@ class ChinaPay extends BasePay {
      * @return string
      */
     public function form(array $args, $buttonTip = '立即使用银联支付') {
-        $args[$this->signKey] = $this->getSignData('form', $args);
+        $data = $this->encodeSign(Http::getMapParameters([
+            'Version' => '20140728',
+            'AccessType',// => '0',
+            'InstuId',
+            'AcqCode',
+            '#MerId',
+            '#MerOrderNo',
+            '#TranDate',// => date('Ymd'),
+            '#TranTime',// => date('His'),
+            '#OrderAmt',// => $order['order_amount'] * 100, 以分为单位
+            'TranType' => '0001',  //0001个人网银支付 0002企业网银支付 0003授信交易 0004快捷支付 0005账单支付、 ChinaPay手机控件支付 0006认证支付 0007分期付款 0008后台支付 0201预授权交易
 
-        $button ='<form action="'.$this->apiMap['form'][0].'" method="POST" target="_blank">';// （这里action的内容为提交交易数据的URL地址）
-        foreach ($args as $key => $item) {
+            'BusiType' => '0001',
+            'CurryNo',// => 'CNY',
+            'SplitType', //0001：实时分账 0002：延时分账
+            'SplitMethod', //0：按金额分账 1：按比例分账
+            'MerSplitMsg',
+            'BankInstNo',
+
+            '#MerPageUrl',// => $pageUrl,
+            '#MerBgUrl',// => $bgUrl,
+            'CommodityMsg',
+
+            'MerResv' => 'chinapay',
+            'TranReserved',
+            'CardTranData',
+            'PayTimeOut',
+            'TimeStamp', // YmdHis
+            'RiskData',
+            'Signature',
+            '#RemoteAddr'// => real_ip()
+        ], $this->merge($args)));
+
+        $button ='<form action="https://payment.chinapay.com/CTITS/service/rest/page/nref/000000000017/0/0/0/0/0" method="POST" target="_blank">';// （这里action的内容为提交交易数据的URL地址）
+        foreach ($data as $key => $item) {
             $button .= '<input type="hidden" name="'.$key.'" value="'.$item.'">';
         }
         return $button.'<input type="submit" value="'.$buttonTip.'"/></form>';
@@ -257,8 +255,8 @@ class ChinaPay extends BasePay {
      * @throws Exception
      */
     public function declareOrder(array $args = array()) {
-        $url = new Uri($this->apiMap['query'][0]);
-        $args = $this->httpGet($url->setData($this->getSignData('declareOrder', $args)));
+        $args = $this->getDeclareOrder()
+            ->parameters($this->merge($args))->json();
         // 签名和验签方法不一样，要改
         if (!$this->verify($args)) {
             throw new Exception('数据验签失败！');

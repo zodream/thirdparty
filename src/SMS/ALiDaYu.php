@@ -1,7 +1,7 @@
 <?php
 namespace Zodream\ThirdParty\SMS;
 
-use Zodream\Domain\Filter\Filters\RequiredFilter;
+use Zodream\Http\Http;
 use Zodream\ThirdParty\ThirdParty;
 
 /**
@@ -131,19 +131,11 @@ class ALiDaYu extends ThirdParty {
         reset($data);
         $arg = '';
         foreach ($data as $key => $item) {
-            if ($this->isEmpty($item) || $key == 'sign') {
+            if (Http::isEmpty($item) || $key == 'sign') {
                 continue;
             }
             $arg .= $key.$item;
         }
         return strtoupper(md5($secret.$arg.$secret));
-    }
-
-    protected function isEmpty($value) {
-        static $validator;
-        if (empty($validator)) {
-            $validator = new RequiredFilter();
-        }
-        return !$validator->validate($value);
     }
 }

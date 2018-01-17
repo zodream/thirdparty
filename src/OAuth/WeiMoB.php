@@ -7,27 +7,29 @@ namespace Zodream\ThirdParty\OAuth;
  * Date: 2016/9/7
  * Time: 9:19
  */
+use Zodream\Http\Http;
 use Zodream\Infrastructure\Http\Request;
 
 class WeiMoB extends BaseOAuth {
 
     protected $configKey = 'weimob';
 
-    protected $apiMap = [
-        'login' => [
-            'https://dopen.weimob.com/fuwu/b/oauth2/authorize',
-            [
-                'enter' => 'wm',
-                'view' => 'pc',
-                'response_type' => 'code',
-                'state',
-                '#redirect_uri',
-                'scope' => 'default'
-            ]
-        ],
-        'access' => [
-            [
-                'https://dopen.weimob.com/fuwu/b/oauth2/token',
+    public function getLogin() {
+        return $this->getBaseHttp()
+            ->url('https://dopen.weimob.com/fuwu/b/oauth2/authorize',
+                [
+                    'enter' => 'wm',
+                    'view' => 'pc',
+                    'response_type' => 'code',
+                    'state',
+                    '#redirect_uri',
+                    'scope' => 'default'
+                ]);
+    }
+
+    public function getAccess() {
+        return $this->getBaseHttp()
+            ->url('https://dopen.weimob.com/fuwu/b/oauth2/token',
                 [
                     '#client_id',
                     '#client_secret',
@@ -35,17 +37,22 @@ class WeiMoB extends BaseOAuth {
                     '#code',
                     '#redirect_uri',
                     'state'
-                ]
-            ],
-            [],
-            'POST'
-        ],
-        'info' => [
-            'http://dopen.weimob.com/api/1_0/open/usercenter/getWeimobUserInfo',
-            '#accesstoken'
-        ]
-    ];
+                ])->method(Http::POST);
+    }
 
+
+    public function getInfo() {
+        return $this->getBaseHttp()
+            ->url('http://dopen.weimob.com/api/1_0/open/usercenter/getWeimobUserInfo',
+                [
+                    '#accesstoken'
+                ]);
+    }
+
+    /**
+     * @return bool|mixed
+     * @throws \Exception
+     */
     public function callback() {
         $state = Request::get('state', '');
         if (strpos($state, 'sign:') !== 0) {
@@ -80,7 +87,7 @@ class WeiMoB extends BaseOAuth {
         business_id String	 微盟商户id
         public_account_id String 微盟商户的公众号id
          */
-        $access = $this->getJson('access');
+        $access = $this->getAccess()->json();
         if (!array_key_exists('access_token', $access)) {
             return false;
         }
@@ -91,9 +98,10 @@ class WeiMoB extends BaseOAuth {
     /**
      * 获取用户信息
      * @return array|false
+     * @throws \Exception
      */
-    public function getInfo() {
-        $args = $this->getJson('info');
+    public function info() {
+        $args = $this->getInfo()->json();
         if ($args['code']['errcode'] != 0) {
             return false;
         }

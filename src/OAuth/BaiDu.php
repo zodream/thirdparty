@@ -9,10 +9,9 @@ namespace Zodream\ThirdParty\OAuth;
 class BaiDu extends BaseOAuth {
     protected $configKey= 'baidu';
 
-    protected $apiMap = array(
-        'login' => array(
-            'http://openapi.baidu.com/oauth/2.0/authorize',
-            array(
+    public function getLogin() {
+        return $this->getBaseHttp()
+            ->url('http://openapi.baidu.com/oauth/2.0/authorize', [
                 '#client_id',
                 'response_type' => 'code',
                 '#redirect_uri',
@@ -21,44 +20,43 @@ class BaiDu extends BaseOAuth {
                 'display',
                 'force_login',
                 'login_type'
-            )
-        ),
-        'access' => array(
-            'https://openapi.baidu.com/oauth/2.0/token',
-            array(
-                'grant_type' => 'authorization_code',
-                '#code',
-                '#client_id',
-                '#client_secret',
-                '#redirect_uri'
-            )
-        ),
-        'refresh' => array(
-            'https://openapi.baidu.com/oauth/2.0/token',
-            array(
-                'grant_type' => 'refresh_token',
-                '#refresh_token',
-                '#client_id',
-                '#client_secret',
-                'scope'
-            )
-        ),
-        'uid' => array(
-            'https://openapi.baidu.com/rest/2.0/passport/users/getLoggedInUser',
-            array(
+            ]);
+    }
+
+    public function getAccess() {
+        return $this->getBaseHttp()->url('https://openapi.baidu.com/oauth/2.0/token', [
+            'grant_type' => 'authorization_code',
+            '#code',
+            '#client_id',
+            '#client_secret',
+            '#redirect_uri'
+        ]);
+    }
+
+    public function getRefresh() {
+        return $this->getBaseHttp()->url('https://openapi.baidu.com/oauth/2.0/token', [
+            'grant_type' => 'refresh_token',
+            '#refresh_token',
+            '#client_id',
+            '#client_secret',
+            'scope'
+        ]);
+    }
+
+    public function getUid() {
+        return $this->getBaseHttp('https://openapi.baidu.com/rest/2.0/passport/users/getLoggedInUser')
+            ->maps([
                 '#access_token',
                 'callback'
-            ),
-            'post'
-        ),
-        'info' => array(
-            'https://openapi.baidu.com/rest/2.0/passport/users/getInfo',
-            array(
-                '#access_token',
-                'callback'
-            )
-        )
-    );
+            ]);
+    }
+
+    public function getInfo() {
+        return $this->getBaseHttp()->url('https://openapi.baidu.com/rest/2.0/passport/users/getInfo', [
+            '#access_token',
+            'callback'
+        ]);
+    }
 
     /**
      * @return array|false
@@ -75,7 +73,7 @@ class BaiDu extends BaseOAuth {
          * session_key：基于http调用Open API时所需要的Session Key，其有效期与Access Token一致；
          * session_secret：基于http调用Open API时计算参数签名用的签名密钥。
          */
-        $access = $this->getJson('access');
+        $access = $this->getAccess()->json();
         if (!is_array($access) || !array_key_exists('access_token', $access)) {
             return false;
         }
@@ -84,7 +82,7 @@ class BaiDu extends BaseOAuth {
         return $access;
     }
 
-    public function getInfo() {
+    public function info() {
         /**
          * uid 当前登录用户的数字ID。
          * uname
@@ -111,7 +109,7 @@ class BaiDu extends BaseOAuth {
         trade	string	否	计算机/电子产品	当前职业
         job	string	否	未知	职位
          */
-        $user = $this->getJson('info');
+        $user = $this->getInfo()->json();
         if (!is_array($user) || !array_key_exists('userid', $user)) {
             return false;
         }

@@ -7,6 +7,7 @@ namespace Zodream\ThirdParty\Pay;
  * Date: 2016/8/17
  * Time: 15:22
  */
+use Zodream\Http\Http;
 use Zodream\ThirdParty\ThirdParty;
 use Zodream\Disk\File;
 
@@ -63,6 +64,10 @@ abstract class BasePay extends ThirdParty  {
         }
         $this->setSignType($this->get('signType'));
     }
+
+    public function getBaseHttp($url = null) {
+        return $this->getHttp($url);
+    }
     
     public function setSignType($arg = null) {
         if (empty($arg)) {
@@ -110,15 +115,10 @@ abstract class BasePay extends ThirdParty  {
 
     /**
      * 获取带签名的参数
-     * @param string $name
-     * @param array $args
+     * @param array $data
      * @return array
      */
-    protected function getSignData($name, array $args = array()) {
-        if (!array_key_exists($name, $this->apiMap)) {
-            throw new \InvalidArgumentException('API ERROR');
-        }
-        $data = $this->getData($this->apiMap[$name][1], array_merge($this->get(), $args));
+    protected function encodeSign(array $data) {
         $data[$this->signKey] = $this->sign($data);
         return $data;
     }
