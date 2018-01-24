@@ -3,7 +3,7 @@
     "description": "pay or oauth or sms api client",
     "keywords": ["thirdparty api", "zodream"],
     "homepage": "https://github.com/zodream/thirdparty",
-    "license": "Apache Licence 2.0",
+    "license": "MIT",
     "authors": [
         {
             "name" : "Jason Zou",
