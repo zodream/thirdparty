@@ -10,59 +10,49 @@ class DouBan extends BaseOAuth {
 
     protected $configKey = 'douban';
 
-    public function getLogin() {
-        return $this->getBaseHttp()
-            ->url('https://www.douban.com/service/auth2/auth',
-                [
-                    '#client_id',
-                    '#redirect_uri',
-                    'response_type' => 'code',
-                    'scope',
-                    'state'
-                ]);
-    }
-
-    public function getAccess() {
-        return $this->getBaseHttp('https://www.douban.com/service/auth2/token')
-            ->maps([
+    protected $apiMap = [
+        'login' => [
+            'https://www.douban.com/service/auth2/auth',
+            [
+                '#client_id',
+                '#redirect_uri',
+                'response_type' => 'code',
+                'scope',
+                'state'
+            ]
+        ],
+        'access' => [
+            'https://www.douban.com/service/auth2/token',
+            [
                 '#client_id',
                 '#client_secret',
                 '#redirect_uri',
                 'grant_type' => 'authorization_code',
                 '#code'
-            ]);
-    }
-
-    public function getRefresh() {
-        return $this->getBaseHttp('https://www.douban.com/service/auth2/token')
-            ->maps([
+            ],
+            'post'
+        ],
+        'refresh' => [
+            'https://www.douban.com/service/auth2/token',
+            [
                 '#client_id',
                 '#client_secret',
                 '#redirect_uri',
                 'grant_type' => 'refresh_token',
                 '#refresh_token'
-            ]);
-    }
-
-    public function getInfo() {
-        return $this->getBaseHttp('https://api.douban.com/v2/user/~me');
-    }
-
-    protected $apiMap = [
+            ],
+            'post'
+        ],
         'info' => [
-
+            'https://api.douban.com/v2/user/~me'
         ]
     ];
 
-    /**
-     * @return array|bool|mixed
-     * @throws \Exception
-     */
     public function callback() {
         if (parent::callback() === false) {
             return false;
         }
-        $access = $this->getAccess()->json();
+        $access = $this->getJson('access');
         if (!is_array($access) || !array_key_exists('douban_user_id', $access)) {
             return false;
         }
@@ -74,10 +64,9 @@ class DouBan extends BaseOAuth {
     /**
      * 获取用户信息
      * @return array|false
-     * @throws \Exception
      */
-    public function info() {
-        $user = $this->getInfo()->json();
+    public function getInfo() {
+        $user = $this->getJson('info');
         if (!is_array($user) || !array_key_exists('name', $user)) {
             return false;
         }

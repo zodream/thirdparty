@@ -7,7 +7,6 @@ namespace Zodream\ThirdParty\Pay;
  * Date: 2016/8/18
  * Time: 19:07
  */
-use Zodream\Http\Http;
 use Zodream\Image\Image;
 use Zodream\Image\QrCode;
 use Zodream\Disk\File;
@@ -32,22 +31,10 @@ class WeChat extends BasePay {
 
     protected $ignoreKeys = ['sign'];
 
-    public function getBaseHttp($url = null) {
-        $arg = Str::random(32);
-        $this->set([
-            'noncestr' => $arg,
-            'nonce_str' => $arg
-        ]);
-        return parent::getBaseHttp($url)->encode([$this, 'encodeXml']);
-    }
-
-    /**
-     * 统一下单
-     * @return Http
-     */
-    public function getOrder() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/unifiedorder')
-            ->maps([
+    protected $apiMap = [
+        'order' => [ //统一下单
+            'https://api.mch.weixin.qq.com/pay/unifiedorder',
+            [
                 '#appid',
                 '#mch_id',
                 '#device_info',
@@ -68,40 +55,31 @@ class WeChat extends BasePay {
                 'sign',
                 'openid', // JSAPI必须
                 'product_id'  //NATIVE 必须
-            ]);
-    }
-
-    /**
-     * app调起支付参数
-     * @return array
-     */
-    public function getAppPay() {
-        $data = Http::getMapParameters([
-            '#appid',
-            '#mch_id:partnerid',
-            '#prepay_id:prepayid',
-            'package' => 'Sign=WXPay',
-            '#noncestr',
-            '#timestamp',
-            'sign'
-        ], $this->get());
-        return $this->encodeXml($data);
-    }
-
-    /**
-     * app支付结果通用通知商户处理后同步返回给微信参数：
-     * @return array
-     */
-    public function getAppReturn() {
-        return [
-            'return_code' => 'SUCCESS',   //SUCCESS/FAIL
-            'return_msg' => 'OK'
-        ];
-    }
-
-    public function getQuery() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/orderquery')
-            ->maps([
+            ],
+            'POST'
+        ],
+        'pay' => [    //app调起支付参数
+            '',
+            [
+                '#appid',
+                '#mch_id:partnerid',
+                '#prepay_id:prepayid',
+                'package' => 'Sign=WXPay',
+                '#noncestr',
+                '#timestamp',
+                'sign'
+            ]
+        ],
+        'appReturn' => [ //app支付结果通用通知商户处理后同步返回给微信参数：
+            '',
+            [
+                'return_code' => 'SUCCESS',   //SUCCESS/FAIL
+                'return_msg' => 'OK'
+            ]
+        ],
+        'query' => [
+            'https://api.mch.weixin.qq.com/pay/orderquery',
+            [
                 '#appid',
                 '#mch_id',
                 [
@@ -110,23 +88,23 @@ class WeChat extends BasePay {
                 ],
                 '#nonce_str',
                 'sign'
-            ]);
-    }
-
-    public function getClose() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/closeorder')
-            ->maps([
+            ],
+            'POST'
+        ],
+        'close' => [
+            'https://api.mch.weixin.qq.com/pay/closeorder',
+            [
                 '#appid',
                 '#mch_id',
                 '#out_trade_no',
                 '#nonce_str',
                 'sign'
-            ]);
-    }
-
-    public function getRefund() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/secapi/pay/refund')
-            ->maps([
+            ],
+            'POST'
+        ],
+        'refund' => [
+            'https://api.mch.weixin.qq.com/secapi/pay/refund',
+            [
                 '#appid',
                 '#mch_id',
                 'device_info',
@@ -141,12 +119,12 @@ class WeChat extends BasePay {
                 '#refund_fee',
                 'refund_fee_type',
                 '#op_user_id'
-            ]);
-    }
-
-    public function getQueryRefund() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/refundquery')
-            ->maps([
+            ],
+            'POST'
+        ],
+        'queryRefund' => [
+            'https://api.mch.weixin.qq.com/pay/refundquery',
+            [
                 '#appid',
                 '#mch_id',
                 'device_info',
@@ -158,12 +136,12 @@ class WeChat extends BasePay {
                     'out_refund_no',
                     'refund_id'
                 ]
-            ]);
-    }
-
-    public function getBill() {
-        return $this->getBaseHttp()
-            ->url('https://api.mch.weixin.qq.com/pay/downloadbill', [
+            ],
+            'POST'
+        ],
+        'bill' => [
+            'https://api.mch.weixin.qq.com/pay/downloadbill',
+            [
                 '#appid',
                 '#mch_id',
                 'device_info',
@@ -171,80 +149,53 @@ class WeChat extends BasePay {
                 'sign',
                 '#bill_date',
                 'bill_type'
-            ]);
-    }
-
-    /**
-     * 生成支付二维码
-     * @return Http
-     */
-    public function getPayQr() {
-        return $this->getBaseHttp()
-            ->url('weixin://wxpay/bizpayurl',
-                [
-                    '#appid', // 微信分配的公众账号ID
-                    '#mch_id',
-                    '#time_stamp',
-                    '#nonce_str',
-                    '#product_id',
-                    'sign'
-                ]);
-    }
-
-    /**
-     * 二维码支付回调输出返回
-     * @return array
-     */
-    public function getQrReturn() {
-        $data = Http::getMapParameters([
-            'return_code' => 'SUCCESS',
-            'return_msg',
-            '#appid',
-            '#mch_id',
-            '#nonce_str',
-            '#prepay_id',
-            'result_code' => 'SUCCESS',
-            'err_code_des',
-            'sign'
-        ], $this->get());
-        return $this->encodeXml($data);
-    }
-
-    /**
-     * 先生成预支付订单再生成二维码
-     * @return Http
-     */
-    public function getOrderQr() {
-        return $this->getBaseHttp()
-            ->url('weixin://wxpay/bizpayurl', [
-                'qr'
-            ]);
-    }
-
-    /**
-     * 公众号支付 网页端调起支付API
-     * @return array
-     */
-    public function getJsApi() {
-        return Http::getMapParameters([
-            '#appId',
-            '#timeStamp',
-            '#nonceStr',
-            '#package' => [
-                '#prepay_id'
-            ],
-            'signType' => 'MD5',
-            'paySign'
-        ], $this->get());
-    }
-
-    /**
-     * 海关申报
-     * @return Http
-     */
-    public function getDeclareOrder() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/cgi-bin/mch/customs/customdeclareorder')
-            ->maps([
+            ]
+        ],
+        'qrcode' => [ //生成支付二维码
+            'weixin://wxpay/bizpayurl',
+            [
+                '#appid', // 微信分配的公众账号ID
+                '#mch_id',
+                '#time_stamp',
+                '#nonce_str',
+                '#product_id',
+                'sign'
+            ]
+        ],
+        'qrCallback' => [ // 二维码支付回调输出返回
+            '',
+            [
+                'return_code' => 'SUCCESS',
+                'return_msg',
+                '#appid',
+                '#mch_id',
+                '#nonce_str',
+                '#prepay_id',
+                'result_code' => 'SUCCESS',
+                'err_code_des',
+                'sign'
+            ]
+        ],
+        'orderQr' => [  //先生成预支付订单再生成二维码
+            'weixin://wxpay/bizpayurl',
+            'qr'
+        ],
+        'jsapi' => [  // 公众号支付 网页端调起支付API
+            '',
+            [
+                '#appId',
+                '#timeStamp',
+                '#nonceStr',
+                '#package' => [
+                    '#prepay_id'
+                ],
+                'signType' => 'MD5',
+                'paySign'
+            ]
+        ],
+        'declareOrder' => [  //海关申报
+            'https://api.mch.weixin.qq.com/cgi-bin/mch/customs/customdeclareorder',
+            [
                 'sign',
                 '#appid',
                 '#mch_id',
@@ -263,82 +214,26 @@ class WeChat extends BasePay {
                 'cert_type',
                 'cert_id',
                 'name'
-            ]);
-    }
+            ],
+            'POST'
+        ]
+    ];
 
     /**
-     * 企业付款给个人微信零钱
-     * @return Http
+     * 加入随机数加入签名
+     * @param string $name
+     * @param array $args
+     * @return array|false
      */
-    public function getTransfer() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers')
-            ->maps([
-                '#mch_appid',
-                '#mchid',
-                'device_info',
-                '#nonce_str',
-                'sign',
-                '#partner_trade_no',
-                '#openid',
-                'check_name' => 'NO_CHECK', //NO_CHECK：不校验真实姓名  FORCE_CHECK：强校验真实姓名
-                're_user_name',
-                '#amount',
-                '#desc',
-                '#spbill_create_ip'
-            ]);
+    protected function getSignData($name, array $args = array()) {
+        $args['noncestr'] = $args['nonce_str'] = Str::random(32);
+        $data = parent::getSignData($name, $args);
+        return empty($this->error) ? $data : false;
     }
 
-    /**
-     * 查询企业付款
-     * @return Http
-     */
-    public function getQueryTransfer() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/mmpaymkttransfers/gettransferinfo')
-            ->maps([
-                '#nonce_str',
-                'sign',
-                '#partner_trade_no',
-                '#mch_id',
-                '#appid '
-            ]);
-    }
-
-    /**
-     * 企业付款到银行卡
-     * @return Http
-     */
-    public function getTransferBank() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/mmpaysptrans/pay_bank')
-            ->maps([
-                '#mchid',
-                '#nonce_str',
-                'sign',
-                '#partner_trade_no',
-                '#enc_bank_no',
-                '#enc_true_name',
-                '#bank_code',
-                '#amount',
-                '#desc',
-            ]);
-    }
-
-    /**
-     * 查询企业付款银行卡
-     * @return Http
-     */
-    public function getQueryTransferBank() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/mmpaysptrans/query_bank')
-            ->maps([
-                '#nonce_str',
-                'sign',
-                '#partner_trade_no',
-                '#mch_id',
-            ]);
-    }
-
-    protected function encodeXml(array $data) {
+    protected function getPostData($name, array $args) {
         return Xml::encode(
-            $data, 'xml'
+            $this->getSignData($name, $args), 'xml'
         );
     }
 
@@ -355,10 +250,9 @@ class WeChat extends BasePay {
      * @param array $args
      * @return array|bool|mixed|object
      * @throws \ErrorException
-     * @throws \Exception
      */
-    public function order(array $args = array()) {
-        $args = $this->getOrder()->parameters($this->merge($args))->xml();
+    public function getOrder(array $args = array()) {
+        $args = $this->getXml('order', $args);
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
@@ -381,10 +275,9 @@ class WeChat extends BasePay {
      * @param array $args
      * @return array|bool|mixed|object
      * @throws \ErrorException
-     * @throws \Exception
      */
     public function queryOrder(array $args = array()) {
-        $args = $this->getQuery()->parameters($this->merge($args))->xml();
+        $args = $this->getXml('query', $args);
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
@@ -399,10 +292,9 @@ class WeChat extends BasePay {
      * @param array $args
      * @return array|bool|mixed|object
      * @throws \ErrorException
-     * @throws \Exception
      */
     public function closeOrder(array $args = array()) {
-        $args = $this->getClose()->parameters($this->merge($args))->xml();
+        $args = $this->getXml('close', $args);
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
@@ -418,15 +310,17 @@ class WeChat extends BasePay {
      * @param array $args
      * @return array
      */
-    public function appPay(array $args = array()) {
-        if (!isset($args['timestamp'])) {
+    public function pay(array $args = array()) {
+        if (!array_key_exists('timestamp', $args)) {
             $args['timestamp'] = time();
         }
-        return $this->set($args)->getAppPay();
+        return $this->getSignData('pay', $args);
     }
 
-    public function appCallbackReturn() {
-        return Xml::specialEncode($this->getAppReturn());
+    public function appCallbackReturn(array $args = array()) {
+        return Xml::specialEncode(
+            $this->getData($this->apiMap['appReturn'][1],
+                array_merge($this->get(), $args)));
     }
 
     /**
@@ -434,10 +328,15 @@ class WeChat extends BasePay {
      * @param string|File $file
      * @param array $args
      * @return int
-     * @throws \Exception
      */
     public function downloadBill($file, array $args = array()) {
-        return $this->getBill()->parameters($this->merge($args))->save($file);
+        $args = $this->httpPost($this->apiMap['bill'][0], Xml::encode(
+            $this->getSignData('bill', $args), 'xml'
+        ));
+        if (!$file instanceof File) {
+            $file = new File($file);
+        }
+        return $file->write($args);
     }
 
     /**
@@ -445,10 +344,9 @@ class WeChat extends BasePay {
      * @param array $args
      * @return array|bool|mixed|object
      * @throws \ErrorException
-     * @throws \Exception
      */
     public function queryRefund(array $args = array()) {
-        $args = $this->getQueryRefund()->parameters($this->merge($args))->xml();
+        $args = $this->getXml('queryRefund', $args);
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
@@ -463,9 +361,9 @@ class WeChat extends BasePay {
      * @param array $args
      * @return array|bool|mixed|object
      * @throws \ErrorException
-     * @throws \Exception
      */
     public function refundOrder(array $args = array()) {
+        $data = $this->getSignData('refund', $args);
         //第一种方法，cert 与 key 分别属于两个.pem文件
         //默认格式为PEM，可以注释
         //curl_setopt($ch,CURLOPT_SSLCERTTYPE,'PEM');
@@ -475,9 +373,11 @@ class WeChat extends BasePay {
         //curl_setopt($ch,CURLOPT_SSLKEY,getcwd().'/private.pem');
 
         //第二种方式，两个文件合成一个.pem文件
-        $args = $this->getRefund()
-            ->setOption(CURLOPT_SSLCERT, (string)$this->privateKeyFile)
-            ->parameters($this->merge($args))->xml();
+        $this->http->addOption(CURLOPT_SSLCERT, (string)$this->privateKeyFile);
+        $args = Xml::decode(
+            $this->httpPost($this->apiMap['refund'][0],
+                Xml::encode($data, 'xml'
+                )));
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
@@ -500,7 +400,7 @@ class WeChat extends BasePay {
         reset($args);
         $arg = '';
         foreach ($args as $key => $item) {
-            if (Http::isEmpty($item) ||
+            if ($this->isEmpty($item) ||
                 in_array($key, $this->ignoreKeys)) {
                 continue;
             }
@@ -545,12 +445,12 @@ class WeChat extends BasePay {
 
     /**
      * 微信二维码支付
-     * @param array $args
+     * @param array $arg
      * @return Image
-     * @throws \Exception
      */
-    public function qrPay(array $args = array()) {
-        $url = $this->getPayQr()->parameters($this->merge($args))->getUrl();
+    public function qrPay(array $arg = array()) {
+        $url = new Uri($this->apiMap['qrcode'][0]);
+        $url->setData($this->getSignData('qrcode', $arg));
         return (new QrCode())->create((string)$url);
     }
 
@@ -567,7 +467,7 @@ class WeChat extends BasePay {
         if ($order === false) {
             return false;
         }*/
-        return $this->getQrReturn();
+        return Xml::encode($this->getSignData('qrCallback'));
     }
 
     /**
@@ -577,7 +477,7 @@ class WeChat extends BasePay {
      * @throws \Exception
      */
     public function orderQr(array $args = array()) {
-        $data = $this->order($args);
+        $data = $this->getOrder($args);
         if ($data === false) {
             return false;
         }
@@ -597,7 +497,7 @@ class WeChat extends BasePay {
      */
     public function h5Pay(array $args = [], $redirect_url = null) {
         $args['trade_type'] = 'MWEB';
-        $data = $this->order($args);
+        $data = $this->getOrder($args);
         if ($data === false) {
             return false;
         }
@@ -617,7 +517,8 @@ class WeChat extends BasePay {
         $args['appId'] = $this->get('appid'); //防止微信返回appid
         $args['nonceStr'] = Str::random(32);
         $args['timeStamp'] = time();
-        $data = $this->set($args)->getJsApi();
+        $data = $this->getData($this->apiMap['jsapi'][1],
+            array_merge($this->get(), $args));
         $data['package'] = 'prepay_id='.$data['package']['prepay_id'];
         $data['paySign'] = $this->sign($data);
         return $data;
@@ -628,10 +529,9 @@ class WeChat extends BasePay {
      * @param array $args
      * @return array|mixed
      * @throws \ErrorException
-     * @throws \Exception
      */
     public function declareOrder(array $args = array()) {
-        $args = $this->getDeclareOrder()->parameters($this->merge($args))->xml();
+        $args = $this->getXml('declareOrder', $args);
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }

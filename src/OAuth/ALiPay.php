@@ -15,20 +15,21 @@ class ALiPay extends BaseOAuth {
 
     protected $codeKey = 'auth_code';
 
-    public function getLogin() {
-        return $this->getBaseHttp()
-            ->url('https://openauth.alipay.com/oauth2/publicAppAuthorize.htm', [
+    protected $apiMap = array(
+        'login' => array(
+            'https://openauth.alipay.com/oauth2/publicAppAuthorize.htm',
+            array(
                 '#app_id',
                 'scope' => 'auth_user',   // auth_userinfo  auth_user auth_base
                 'response_type' => 'code',
                 'redirect_uri',
                 'state'
-            ]);
-    }
+            )
+        ),
+    );
 
     /**
      * @return array|false
-     * @throws \Exception
      */
     public function callback() {
         if (parent::callback() === false) {
@@ -41,7 +42,7 @@ class ALiPay extends BaseOAuth {
          * re_expires_in
          * refresh_token
          */
-        $access = (new OAuth())->token($this->get('code'));
+        $access = (new OAuth())->getToken($this->get('code'));
         if (!is_array($access) || !array_key_exists('access_token', $access)) {
             return false;
         }
@@ -53,9 +54,8 @@ class ALiPay extends BaseOAuth {
     /**
      * 获取用户信息
      * @return array|false
-     * @throws \Exception
      */
-    public function info() {
+    public function getInfo() {
         /**
          * avatar	用户头像	String	如果没有数据的时候不会返回该数据，请做好容错	可空	https://tfsimg.alipay.com/images/partner/T1k0xiXXRnXXXXXXXX
         nick_name	用户昵称	String	如果没有数据的时候不会返回该数据，请做好容错	可空	张三
@@ -74,7 +74,7 @@ class ALiPay extends BaseOAuth {
         user_status	用户状态（Q/T/B/W）	String	Q代表快速注册用户；T代表已认证用户；B代表被冻结账户；W代表已注册，未激活的账户	不可空	T
         is_id_auth	是否身份证认证	String	T为是身份证认证，F为非身份证认证	不可空	T
          */
-        $user = (new OAuth())->info($this->get('access_token'));
+        $user = (new OAuth())->getInfo($this->get('access_token'));
         if (!is_array($user) || $user['code'] != 10000) {
             return false;
         }

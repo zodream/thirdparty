@@ -6,8 +6,6 @@ namespace Zodream\ThirdParty\OAuth;
  * Date: 2016/4/10
  * Time: 14:34
  */
-use Zodream\Http\Http;
-use Zodream\Http\Uri;
 use Zodream\ThirdParty\ThirdParty;
 use Zodream\Helpers\Str;
 use Zodream\Service\Factory;
@@ -24,18 +22,26 @@ use Zodream\Infrastructure\Http\Request;
  */
 abstract class BaseOAuth extends ThirdParty  {
 
+    protected $baseUrl = '';
     protected $codeKey = 'code';
 
-    public function getBaseHttp($url = null) {
-        return $this->getHttp($url)
-            ->parameters($this->get());
+    public function getBaseUrl() {
+        return $this->baseUrl;
     }
 
-    /**
-     * @return Http
-     */
-    abstract public function getLogin();
-
+    public function getMap($name) {
+        $map = parent::getMap($name);
+        $baseUrl = $this->getBaseUrl();
+        if (empty($baseUrl)) {
+            return $map;
+        }
+        if (is_array($map[0])) {
+            $map[0][0] = $baseUrl.$map[0][0];
+        } else {
+            $map[0] = $baseUrl.$map[0];
+        }
+        return $map;
+    }
 
     public function callback() {
         Factory::log()
@@ -54,19 +60,17 @@ abstract class BaseOAuth extends ThirdParty  {
 
     /**
      * 返回重定向到登录页面的链接
-     * @return Uri
-     * @throws \Exception
      */
     public function login() {
         $state = Str::randomNumber(7);
         Factory::session()->set('state', $state);
         $this->set('state', $state);
-        return $this->getLogin()->getUrl();
+        return $this->getUrl('login');
     }
 
     /**
      * 获取用户信息
      * @return array
      */
-    public abstract function info();
+    public abstract function getInfo();
 }

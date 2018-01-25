@@ -16,60 +16,45 @@ class PayPal extends BaseOAuth {
     protected $baseUrl = [
         self::LIVE => 'https://www.paypal.com/',
         self::SANDBOX => 'https://www.sandbox.paypal.com/'
-    ];
+     ];
 
-    public function getBaseHttp($path, $maps = []) {
-        return parent::getBaseHttp()
-            ->url($this->baseUrl[$this->mode].$path, $maps);
-    }
-
-    public function getLogin() {
-        return $this->getBaseHttp('signin/authorize', [
-            '#client_id',
-            'response_type' => 'code',
-            'scope' => 'openid profile address email phone https://uri.paypal.com/services/paypalattributes https://uri.paypal.com/services/expresscheckout',
-            '#redirect_uri',
-            'nonce',
-            'state'
-        ]);
-    }
-
-    public function getAccess() {
-        return $this->getBaseHttp('webapps/auth/protocol/openidconnect/v1/identity/tokenservice')
-            ->maps([
+    protected $apiMap = [
+        'login' => [
+            'signin/authorize',
+            [
+                '#client_id',
+                'response_type' => 'code',
+                'scope' => 'openid profile address email phone https://uri.paypal.com/services/paypalattributes https://uri.paypal.com/services/expresscheckout',
+                '#redirect_uri',
+                'nonce',
+                'state'
+            ]
+        ],
+        'access' => [
+            'webapps/auth/protocol/openidconnect/v1/identity/tokenservice',
+            [
                 'grant_type' => 'authorization_code',
                 '#code',
                 '#redirect_uri'
-            ])->setOption([
-                CURLOPT_VERBOSE        => 1,
-                CURLOPT_RETURNTRANSFER => 1,
-                CURLOPT_SSL_VERIFYPEER => FALSE
-            ])->setHeader([
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'Authorization' => 'Basic ' . base64_encode($this->get('client_id') .
-                        ':' . $this->get('client_secret'))
-            ]);
-    }
-
-    public function getRefresh() {
-        return $this->getBaseHttp('webapps/auth/protocol/openidconnect/v1/identity/tokenservice',
+            ],
+            'POST'
+        ],
+        'refresh' => [
+            'webapps/auth/protocol/openidconnect/v1/identity/tokenservice',
             [
                 'grant_type' => 'refresh_token',
                 '#refresh_token',
                 'scope'
-            ]);
-    }
-
-    public function getInfo() {
-        return $this->getBaseHttp('webapps/auth/protocol/openidconnect/v1/identity/openidconnect/userinfo',
+            ]
+        ],
+        'info' => [
+            'webapps/auth/protocol/openidconnect/v1/identity/openidconnect/userinfo',
             [
                 'schema' => 'openid',
                 '#access_token'
-            ])->setHeader([
-                'Authorization' => "Bearer " . $this->get('access_token'),
-                'Content-Type' => 'x-www-form-urlencoded'
-            ]);
-    }
+            ]
+        ]
+    ];
 
     /**
      *
@@ -97,15 +82,34 @@ class PayPal extends BaseOAuth {
         return $this;
     }
 
-    /**
-     * @return bool|mixed
-     * @throws \Exception
-     */
+    public function getBaseUrl() {
+        return $this->baseUrl[$this->mode];
+    }
+
     public function callback() {
         if (!parent::callback()) {
             return false;
         }
-        $access = $this->getAccess()->json();
+        return $this->getAccess();
+    }
+
+    /**
+     * GET ACCESS
+     * @return array
+     */
+    public function getAccess() {
+        $this->http->setOpts([
+            CURLOPT_VERBOSE        => 1,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_SSL_VERIFYPEER => FALSE
+        ]);
+        $this->http->setHeaders(array(
+            'Content-Type' => 'application/x-www-form-urlencoded',
+            'Authorization' => 'Basic ' . base64_encode($this->get('client_id') .
+                    ':' . $this->get('client_secret'))
+        ));
+
+        $access = $this->getJson('access');
         $this->set($access);
         return $access;
     }
@@ -113,10 +117,13 @@ class PayPal extends BaseOAuth {
     /**
      * 获取用户信息
      * @return array|false
-     * @throws \Exception
      */
-    public function info() {
-        $user = $this->getInfo()->json();
+    public function getInfo() {
+        $this->http->setHeaders(array(
+            'Authorization' => "Bearer " . $this->get('access_token'),
+            'Content-Type' => 'x-www-form-urlencoded'
+        ));
+        $user = $this->getJson('info');
         if (!is_array($user) || !array_key_exists('user_id', $user)) {
             return false;
         }

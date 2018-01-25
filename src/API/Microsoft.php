@@ -12,36 +12,34 @@ use Zodream\ThirdParty\ThirdParty;
 
 class Microsoft extends ThirdParty  {
 
-    public function getFaceScore() {
-        return $this->getHttp('http://kan.msxiaobing.com/Api/ImageAnalyze/Process?service=yanzhi')
-            ->maps([
+    protected $apiMap = array(
+        'faceScore' => array(
+            'http://kan.msxiaobing.com/Api/ImageAnalyze/Process?service=yanzhi',
+            array(
                 'MsgId',
                 'CreateTime',
-                'Content[imageUrl]'
-            ]);
-    }
-
-    public function getUpload() {
-        return $this->getHttp('http://kan.msxiaobing.com/Api/Image/UploadBase64');
-    }
+                'Content%5BimageUrl%5D'
+            ),
+            'post'
+        ),
+        'upload' => 'http://kan.msxiaobing.com/Api/Image/UploadBase64'
+    );
 
     /**
      * 颜值测试
      * @param string $img base64_encode
      * @return array
-     * @throws \Exception
      */
     public function faceScore($img) {
         /**
          * {"Host":"","Url":""}
          */
-        $data = $this->getUpload()->parameters($img)->json();
+        $data = Json::decode($this->httpPost($this->apiMap['upload'], $img));
         $this->set(array(
-            'MsgId' => time().'063',
+            'MsgId' => time()."063",
             'CreateTime' => time(),
-            'Content[imageUrl]' => $data['Host'].$data['Url']
+            'Content%5BimageUrl%5D' => $data['Host'].$data['Url']
         ));
-        return $this->getFaceScore()
-            ->parameters($this->get())->json();
+        return $this->getJson('faceScore');
     }
 }

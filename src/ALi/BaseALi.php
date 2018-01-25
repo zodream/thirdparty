@@ -1,9 +1,6 @@
 <?php
 namespace Zodream\ThirdParty\ALi;
 
-use Zodream\Domain\Filter\Filters\RequiredFilter;
-use Zodream\Helpers\Json;
-use Zodream\Http\Http;
 use Zodream\ThirdParty\ThirdParty;
 use Zodream\Disk\File;
 
@@ -32,6 +29,21 @@ abstract class BaseALi extends ThirdParty {
 
     protected $ignoreKeys = [
         'sign'
+    ];
+
+    protected $baseUrl = 'https://openapi.alipay.com/gateway.do';
+
+    protected $baseMap = [
+        '#app_id',
+        'method' => '',
+        'format' => 'JSON',
+        'charset' => 'utf-8',
+        'sign_type' => 'RSA2',
+        'sign',
+        '#timestamp', //yyyy-MM-dd HH:mm:ss
+        'version' => '1.0',
+        'auth_token',
+        'app_auth_token'
     ];
 
     /**
@@ -65,40 +77,6 @@ abstract class BaseALi extends ThirdParty {
         if ($this->has('ignoreKeys')) {
             $this->ignoreKeys = $this->get('ignoreKeys');
         }
-    }
-
-    /**
-     * @return Http
-     */
-    public function getBaseHttp() {
-        return $this->getHttp('https://openapi.alipay.com/gateway.do')
-            ->maps([
-                '#app_id',
-                'method' => '',
-                'format' => 'JSON',
-                'charset' => 'utf-8',
-                'sign_type' => 'RSA2',
-                'sign',
-                '#timestamp', //yyyy-MM-dd HH:mm:ss
-                'version' => '1.0',
-                'auth_token',
-                'app_auth_token'
-            ])->encode(function($data) {
-                if (array_key_exists('biz_content', $data)
-                    && is_array($data['biz_content'])) {
-                    $data['biz_content'] = $this->encodeContent($data['biz_content']);
-                }
-                $data[$this->signKey] = $this->sign($data);
-                return $data;
-            })->parameters($this->get())->parameters([
-                'timestamp' => date('Y-m-d H:i:s')
-            ])->decode(function ($data) {
-                $data = Json::decode($data);
-                if ($this->verify($data)) {
-                    return reset($data);
-                }
-                throw new \Exception('结果验证失败！');
-            });
     }
 
     /**
@@ -140,6 +118,23 @@ abstract class BaseALi extends ThirdParty {
      */
     public function getSignType() {
         return strtoupper($this->get('sign_type', self::RSA2));
+    }
+
+    protected function getByApi($name, $args = array()) {
+        $args['timestamp'] = date('Y-m-d H:i:s');
+        $args += $this->get();
+        $map = array_merge($this->baseMap, $this->getMap($name));
+        $data = $this->getData($map, $args);
+
+        if (array_key_exists('biz_content', $data)
+            && is_array($data['biz_content'])) {
+            $data['biz_content'] = $this->encodeContent($data['biz_content']);
+        }
+        $data[$this->signKey] = $this->sign($data);
+        $url = new Uri($this->baseUrl);
+        return $this->httpPost($url, $data);
+        //需要注意中文转化，不然json_decode 解码不了
+        //$args = iconv('gbk', 'utf-8', $args);
     }
 
     /**
@@ -218,7 +213,6 @@ abstract class BaseALi extends ThirdParty {
      * @param array $params
      * @param string $sign
      * @return bool
-     * @throws \Exception
      */
     public function verify(array $params, $sign = null) {
         if (is_null($sign)) {
@@ -271,13 +265,5 @@ abstract class BaseALi extends ThirdParty {
             openssl_free_key($res);
         }
         return $result;
-    }
-
-    protected function isEmpty($value) {
-        static $validator;
-        if (empty($validator)) {
-            $validator = new RequiredFilter();
-        }
-        return !$validator->validate($value);
     }
 }

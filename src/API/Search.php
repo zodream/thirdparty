@@ -6,31 +6,29 @@ namespace Zodream\ThirdParty\API;
  * Date: 2016/7/27
  * Time: 12:03
  */
+use Zodream\Helpers\Json;
 use Zodream\ThirdParty\ThirdParty;
 
 class Search extends ThirdParty {
-
-    public function getBaidu() {
-        return $this->getHttp()
-            ->url('http://data.zz.baidu.com/urls')
-            ->maps([
-                '#site',
-                '#token'
-            ]);
-    }
+    protected $apiMap = [
+        'baidu' => [
+            'http://data.zz.baidu.com/urls',
+            [
+                '!site',
+                '!token'
+            ]
+        ]
+    ];
 
     /**
      * INITIATIVE PUT URLS TO BAIDU
      * @param array $args
      * @return array
-     * @throws \Exception
      */
     public function putBaiDu(array $args) {
-        return $this->getBaidu()->setHeader([
-            'Content-Type' => 'text/plain'
-        ])->encode(function ($data) {
-            return implode("\n", $data);
-        })->json();
+        return Json::decode($this->http
+            ->setHeader('Content-Type', 'text/plain')
+            ->post($this->getUrl('baidu'), implode("\n", $args)));
     }
 
 

@@ -10,21 +10,21 @@ class TaoBao extends BaseOAuth {
 
     protected $configKey = 'taobao';
 
-    public function getLogin() {
-        return $this->getBaseHttp()
-            ->url('https://oauth.taobao.com/authorize', [
+    protected $apiMap = array(
+        'login' => array(
+            'https://oauth.taobao.com/authorize',
+            array(
                 '#client_id',
                 '#redirect_uri',
                 'response_type' => 'code',
                 'scope',
                 'view' => 'web', //web、tmall或wap
                 'state'
-            ]);
-    }
-
-    public function getAccess() {
-        return $this->getBaseHttp('https://oauth.taobao.com/token')
-            ->maps([
+            )
+        ),
+        'access' => array(
+            'https://oauth.taobao.com/token',
+            array(
                 '#client_id',
                 '#client_secret',
                 '#code',
@@ -32,14 +32,11 @@ class TaoBao extends BaseOAuth {
                 'view' => 'web',   //web、tmall或wap
                 'grant_type' => 'authorization_code',
                 'state'
-            ]);
-    }
+            ),
+            'POST'
+        )
+    );
 
-
-    /**
-     * @return bool|mixed
-     * @throws \Exception
-     */
     public function callback() {
         parent::callback();
         /**
@@ -87,7 +84,7 @@ class TaoBao extends BaseOAuth {
 
         无线端的ssid（对应于view=wap）
          */
-        $access = $this->getAccess()->json();
+        $access = $this->getJson('access');
         $this->set($access);
         return $access;
     }

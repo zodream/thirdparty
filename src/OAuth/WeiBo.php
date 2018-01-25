@@ -19,58 +19,49 @@ class WeiBo extends BaseOAuth {
      */
     protected $configKey = 'weibo';
 
-    public function getLogin() {
-        return $this->getBaseHttp()
-            ->url('https://api.weibo.com/oauth2/authorize', [
-                '#client_id',
-                '#redirect_uri',
-                'scope',
-                'state',
-                'display',
-                'forcelogin',
-                'language'
-            ]);
-    }
-
-    public function getAccess() {
-        return $this->getBaseHttp('https://api.weibo.com/oauth2/access_token')
-            ->maps([
+    protected $apiMap = array(
+       'login' => array(
+           'https://api.weibo.com/oauth2/authorize',
+           array(
+               '#client_id',
+               '#redirect_uri',
+               'scope',
+               'state',
+               'display',
+               'forcelogin',
+               'language'
+           )
+       ),
+        'access' => array(
+            'https://api.weibo.com/oauth2/access_token',
+            array(
                 '#client_id',
                 '#client_secret',
                 'grant_type' => 'authorization_code',
                 '#code',
                 '#redirect_uri'
-            ]);
-    }
-
-    public function getToken() {
-        return $this->getBaseHttp('https://api.weibo.com/oauth2/get_token_info')
-            ->maps([
+            ),
+            'post'
+        ),
+        'token' => array(
+            'https://api.weibo.com/oauth2/get_token_info',
+            '#access_token',
+            'post'
+        ),
+        'delete' => array(
+            'https://api.weibo.com/oauth2/revokeoauth2',
+            '#access_token'
+        ),
+        'info' => [
+            'https://api.weibo.com/2/users/show.json',
+            [
                 '#access_token',
-            ]);
-    }
+                '#uid',              //参数uid与screen_name二者必选其一
+                'screen_name'
+            ]
+        ]
+    );
 
-    public function getDelete() {
-        return $this->getBaseHttp('https://api.weibo.com/oauth2/revokeoauth2')
-            ->maps([
-                '#access_token',
-            ]);
-    }
-
-    public function getInfo() {
-        return $this->getBaseHttp()
-            ->url('https://api.weibo.com/2/users/show.json',
-                [
-                    '#access_token',
-                    '#uid',              //参数uid与screen_name二者必选其一
-                    'screen_name'
-                ]);
-    }
-
-    /**
-     * @return array|bool|mixed
-     * @throws \Exception
-     */
     public function callback() {
         if (parent::callback() === false) {
             return false;
@@ -81,7 +72,7 @@ class WeiBo extends BaseOAuth {
          * remind_in
          * uid
          */
-        $access = $this->getAccess()->json();
+        $access = $this->getJson('access');
         if (!is_array($access) || !array_key_exists('access_token', $access)) {
             return false;
         }
@@ -99,11 +90,7 @@ class WeiBo extends BaseOAuth {
         return $access;
     }
 
-    /**
-     * @return array|bool|mixed
-     * @throws \Exception
-     */
-    public function info() {
+    public function getInfo() {
         /*
          * 
          * id	int64	用户UID
@@ -141,7 +128,7 @@ online_status	int	用户的在线状态，0：不在线、1：在线
 bi_followers_count	int	用户的互粉数
 lang	string	用户当前的语言版本，zh-cn：简体中文，zh-tw：繁体中文，en：英语
          */
-        $user = $this->getInfo()->json();
+        $user = $this->getJson('info');
         if (!is_array($user) || !array_key_exists('screen_name', $user)) {
             return false;
         }

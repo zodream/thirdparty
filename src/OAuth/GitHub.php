@@ -10,46 +10,43 @@ class GitHub extends BaseOAuth {
 
     protected $configKey = 'github';
 
-    public function getLogin() {
-        return $this->getBaseHttp()
-            ->url('https://github.com/login/oauth/authorize', [
-                '#client_id',
-                '#redirect_uri',
-                '#scope',
-                'state',
-                'allow_signup'
-            ]);
-    }
-
-    public function getAccess() {
-        return $this->getBaseHttp('https://github.com/login/oauth/access_token')
-            ->maps([
+    protected $apiMap = array(
+       'login' => array(
+           'https://github.com/login/oauth/authorize',
+           array(
+               '#client_id',
+               '#redirect_uri',
+               '#scope',
+               'state',
+               'allow_signup'
+           )
+       ),
+        'access' => array(
+            'https://github.com/login/oauth/access_token',
+            array(
                 '#client_id',
                 '#client_secret',
                 '#code',
                 'redirect_uri',
                 'state'
-            ])->setHeader([
-                'Accept' => 'application/json'
-            ]);
-    }
-
-    public function getInfo() {
-        return $this->getBaseHttp()
-            ->url('https://api.github.com/user', [
+            ),
+            'post'
+        ),
+        'info' => array(
+            'https://api.github.com/user',
+            array(
                 '#access_token',
-            ])->setHeader([
-                'Authorization' => 'token OAUTH-TOKEN'
-            ]);
-    }
+            )
+        )
+    );
 
     /**
      * @return array|false
-     * @throws \Exception
      */
     public function callback() {
         parent::callback();
-        $access = $this->getAccess()->json();
+        $this->http->setHeaders(['Accept' => 'application/json']);
+        $access = $this->getJson('access');
         if (!array_key_exists('access_token', $access)) {
             return false;
         }
@@ -57,12 +54,9 @@ class GitHub extends BaseOAuth {
         $this->set($access);
         return $access;
     }
-
-    /**
-     * @return array|mixed
-     * @throws \Exception
-     */
-    public function info() {
-        return $this->getInfo()->json();
+    
+    public function getInfo() {
+        $this->http->setHeaders(['Authorization' => 'token OAUTH-TOKEN']);
+        return $this->getJson('info');
     }
 }
