@@ -188,6 +188,7 @@ class ChinaPay extends BasePay {
      * @param array $args
      * @param string $buttonTip
      * @return string
+     * @throws Exception
      */
     public function form(array $args, $buttonTip = '立即使用银联支付') {
         $data = $this->encodeSign(Http::getMapParameters([
