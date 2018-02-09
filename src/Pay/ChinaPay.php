@@ -88,7 +88,7 @@ class ChinaPay extends BasePay {
     }
 
     public function getDeclareOrder() {
-        return $this->getBaseHttp('https://gateway.test.95516.com/gateway/api/backTransReq.do')
+        return $this->getBaseHttp('https://gateway.95516.com/gateway/api/backTransReq.do')
             ->maps([
                 'version' => '5.1.0',		      //版本号
                 'encoding' => 'utf-8',		      //编码方式
@@ -190,7 +190,7 @@ class ChinaPay extends BasePay {
      * @return string
      * @throws Exception
      */
-    public function form(array $args, $buttonTip = '立即使用银联支付') {
+    public function oldForm(array $args, $buttonTip = '立即使用银联支付') {
         $data = $this->encodeSign(Http::getMapParameters([
             'Version' => '20140728',
             'AccessType',// => '0',
