@@ -50,7 +50,7 @@ class WeChat extends BasePay {
             ->maps([
                 '#appid',
                 '#mch_id',
-                '#device_info',
+                'device_info',
                 '#nonce_str',
                 '#body',
                 'detail',
@@ -66,6 +66,7 @@ class WeChat extends BasePay {
                 '#trade_type',
                 'limit_pay',
                 'sign',
+                'sign_type',
                 'openid', // JSAPI必须
                 'product_id'  //NATIVE 必须
             ]);
