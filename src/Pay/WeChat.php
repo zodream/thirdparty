@@ -38,7 +38,9 @@ class WeChat extends BasePay {
             'noncestr' => $arg,
             'nonce_str' => $arg
         ]);
-        return parent::getBaseHttp($url)->encode([$this, 'encodeXml']);
+        return parent::getBaseHttp($url)
+            ->encode([$this, 'encodeXml'])
+            ->decode([$this, 'decodeXml']);
     }
 
     /**
@@ -338,9 +340,14 @@ class WeChat extends BasePay {
     }
 
     protected function encodeXml(array $data) {
-        return Xml::encode(
+        $data[$this->signKey] = $this->sign($data);
+        return Xml::specialEncode(
             $data, 'xml'
         );
+    }
+
+    protected function decodeXml($data) {
+        return Xml::specialDecode($data);
     }
 
     /**
@@ -359,7 +366,7 @@ class WeChat extends BasePay {
      * @throws \Exception
      */
     public function order(array $args = array()) {
-        $args = $this->getOrder()->parameters($this->merge($args))->xml();
+        $args = $this->getOrder()->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
@@ -385,7 +392,7 @@ class WeChat extends BasePay {
      * @throws \Exception
      */
     public function queryOrder(array $args = array()) {
-        $args = $this->getQuery()->parameters($this->merge($args))->xml();
+        $args = $this->getQuery()->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
@@ -403,7 +410,7 @@ class WeChat extends BasePay {
      * @throws \Exception
      */
     public function closeOrder(array $args = array()) {
-        $args = $this->getClose()->parameters($this->merge($args))->xml();
+        $args = $this->getClose()->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
@@ -449,7 +456,7 @@ class WeChat extends BasePay {
      * @throws \Exception
      */
     public function queryRefund(array $args = array()) {
-        $args = $this->getQueryRefund()->parameters($this->merge($args))->xml();
+        $args = $this->getQueryRefund()->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
@@ -478,7 +485,7 @@ class WeChat extends BasePay {
         //第二种方式，两个文件合成一个.pem文件
         $args = $this->getRefund()
             ->setOption(CURLOPT_SSLCERT, (string)$this->privateKeyFile)
-            ->parameters($this->merge($args))->xml();
+            ->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
@@ -632,7 +639,7 @@ class WeChat extends BasePay {
      * @throws \Exception
      */
     public function declareOrder(array $args = array()) {
-        $args = $this->getDeclareOrder()->parameters($this->merge($args))->xml();
+        $args = $this->getDeclareOrder()->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
             throw new \ErrorException($args['return_msg']);
         }
