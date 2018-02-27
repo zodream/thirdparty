@@ -46,7 +46,7 @@ $uri = QQ::login();
 回调
 ```PHP
 $oauth->callback();
-$oauth->getInfo();
+$oauth->info();
 ```
 
 <a name="oauth-wechat"></a>
@@ -69,7 +69,7 @@ $uri = QQ::login();
 回调
 ```PHP
 $oauth->callback();
-$oauth->getInfo();
+$oauth->info();
 ```
 
 <a name="oauth-weibo"></a>
@@ -92,7 +92,7 @@ $uri = QQ::login();
 回调
 ```PHP
 $oauth->callback();
-$oauth->getInfo();
+$oauth->info();
 ```
 
 <a name="pay"></a>
@@ -116,7 +116,7 @@ $oauth->getInfo();
 下订单
 ```PHP
 $pay = new WeChat();
-$order = $pay->getOrder([
+$order = $pay->order([
     'body' => '应用名-商品名',
     'out_trade_no' => 订单号,
     'total_fee' => 1分钱,
@@ -164,7 +164,7 @@ die($pay->appCallbackReturn()); //成功时输出
 调起支付的参数
 ```PHP
 $pay = new AliPay();
-$pay->getMobilePayOrder([
+$pay->mobilePayOrder([
     'timestamp' => date('Y-m-d H:i:s'),
     'subject' => 标题,
     'out_trade_no' => 订单号,
