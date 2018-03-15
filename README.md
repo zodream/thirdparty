@@ -142,7 +142,7 @@ if (empty($data)) {
         'return_msg' => $pay->getError()
     ]));
 }
-die($pay->appCallbackReturn()); //成功时输出
+die($pay->notifySuccess()); //成功时输出
 ```
 
 <a name="pay-alipay"></a>

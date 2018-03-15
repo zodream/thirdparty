@@ -95,7 +95,7 @@ class WeChat extends BasePay {
      * app支付结果通用通知商户处理后同步返回给微信参数：
      * @return array
      */
-    public function getAppReturn() {
+    public function getNotifySuccess() {
         return [
             'return_code' => 'SUCCESS',   //SUCCESS/FAIL
             'return_msg' => 'OK'
@@ -433,8 +433,12 @@ class WeChat extends BasePay {
         return $this->set($args)->getAppPay();
     }
 
-    public function appCallbackReturn() {
-        return Xml::specialEncode($this->getAppReturn());
+    /**
+     * 支付异步通知处理成功响应微信处理成功
+     * @return string
+     */
+    public function notifySuccess() {
+        return Xml::specialEncode($this->getNotifySuccess());
     }
 
     /**
