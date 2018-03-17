@@ -16,6 +16,7 @@ use Zodream\Helpers\Xml;
 use Zodream\Infrastructure\Http\Request;
 use Zodream\Http\Uri;
 use Zodream\Service\Factory;
+use Exception;
 
 class WeChat extends BasePay {
     /**
@@ -77,6 +78,7 @@ class WeChat extends BasePay {
     /**
      * app调起支付参数
      * @return array
+     * @throws Exception
      */
     public function getAppPay() {
         $data = Http::getMapParameters([
@@ -197,6 +199,7 @@ class WeChat extends BasePay {
     /**
      * 二维码支付回调输出返回
      * @return array
+     * @throws Exception
      */
     public function getQrReturn() {
         $data = Http::getMapParameters([
@@ -227,6 +230,7 @@ class WeChat extends BasePay {
     /**
      * 公众号支付 网页端调起支付API
      * @return array
+     * @throws Exception
      */
     public function getJsApi() {
         return Http::getMapParameters([
@@ -276,7 +280,7 @@ class WeChat extends BasePay {
     public function getTransfer() {
         return $this->getBaseHttp('https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers')
             ->maps([
-                '#mch_appid',
+                '#mch_appid:appid',
                 '#mchid',
                 'device_info',
                 '#nonce_str',
@@ -425,6 +429,7 @@ class WeChat extends BasePay {
      *
      * @param array $args
      * @return array
+     * @throws Exception
      */
     public function appPay(array $args = array()) {
         if (!isset($args['timestamp'])) {
@@ -462,10 +467,10 @@ class WeChat extends BasePay {
     public function queryRefund(array $args = array()) {
         $args = $this->getQueryRefund()->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
-            throw new \ErrorException($args['return_msg']);
+            throw new Exception($args['return_msg']);
         }
         if (!$this->verify($args)) {
-            throw new \InvalidArgumentException('数据验签失败！');
+            throw new Exception('数据验签失败！');
         }
         return $args;
     }
@@ -491,10 +496,10 @@ class WeChat extends BasePay {
             ->setOption(CURLOPT_SSLCERT, (string)$this->privateKeyFile)
             ->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
-            throw new \ErrorException($args['return_msg']);
+            throw new Exception($args['return_msg']);
         }
         if (!$this->verify($args)) {
-            throw new \InvalidArgumentException('数据验签失败！');
+            throw new Exception('数据验签失败！');
         }
         return $args;
     }
@@ -506,7 +511,7 @@ class WeChat extends BasePay {
      */
     public function sign($args) {
         if (empty($this->key)) {
-            throw new \InvalidArgumentException('KEY IS NEED');
+            throw new Exception('KEY IS NEED');
         }
         ksort($args);
         reset($args);
@@ -537,20 +542,20 @@ class WeChat extends BasePay {
     /**
      * 交易完成回调
      * @return mixed
-     * @throws \ErrorException
+     * @throws Exception
      */
     public function callback() {
         $args = Xml::specialDecode(Request::input());
         Factory::log()
             ->info('WECHAT PAY CALLBACK: '.Request::input());
         if (!is_array($args)) {
-            throw new \InvalidArgumentException('非法数据');
+            throw new Exception('非法数据');
         }
         if ($args['return_code'] != 'SUCCESS') {
-            throw new \ErrorException($args['return_msg']);
+            throw new Exception($args['return_msg']);
         }
         if (!$this->verify($args)) {
-            throw new \InvalidArgumentException('数据验签失败！');
+            throw new Exception('数据验签失败！');
         }
         return $args;
     }
@@ -559,7 +564,7 @@ class WeChat extends BasePay {
      * 微信二维码支付
      * @param array $args
      * @return Image
-     * @throws \Exception
+     * @throws Exception
      */
     public function qrPay(array $args = array()) {
         $url = $this->getPayQr()->parameters($this->merge($args))->getUrl();
@@ -596,7 +601,7 @@ class WeChat extends BasePay {
         if (array_key_exists('code_url', $data)) {
             return (new QrCode())->create($data['code_url']);
         }
-        throw new \Exception('unkown');
+        throw new Exception('unkown');
         //return (new QrCode())->create($this->getUrl('orderQr', $data));
     }
 
@@ -616,7 +621,7 @@ class WeChat extends BasePay {
         if (array_key_exists('mweb_url', $data)) {
             return $data['mweb_url'].'&redirect_url='.urlencode((string)$redirect_url);
         }
-        throw new \Exception('unkown');
+        throw new Exception('unkown');
     }
 
     /**
@@ -639,18 +644,50 @@ class WeChat extends BasePay {
      * 报关
      * @param array $args
      * @return array|mixed
-     * @throws \ErrorException
-     * @throws \Exception
+     * @throws Exception
      */
     public function declareOrder(array $args = array()) {
         $args = $this->getDeclareOrder()->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
-            throw new \ErrorException($args['return_msg']);
+            throw new Exception($args['return_msg']);
         }
         if (!$this->verify($args)) {
-            throw new \InvalidArgumentException('数据验签失败！');
+            throw new Exception('数据验签失败！');
         }
         $this->set($args);
         return $args;
+    }
+
+    /**
+     * 转账给个人
+     * @param array $args
+     * @param $certFile cert.pem  如果只填一个并表示合并
+     * @param null $keyFile key.pem
+     * @return bool|array
+     * @throws Exception
+     */
+    public function transfer(array $args, $certFile, $keyFile = null) {
+        $http = $this->getTransfer();
+        if (empty($keyFile)) {
+            $http->header(CURLOPT_SSLCERT, (string)$certFile);
+        } else {
+            $http->header([
+                CURLOPT_SSLCERTTYPE => 'PEM',
+                CURLOPT_SSLCERT => (string)$certFile,
+                CURLOPT_SSLKEYTYPE => 'PEM',
+                CURLOPT_SSLKEY => (string)$certFile
+            ]);
+        }
+        $data = $http->parameters($this->merge($args))->text();
+        if (empty($data)) {
+            return false;
+        }
+        if ($data['return_code'] != 'SUCCESS') {
+            throw new Exception($data['return_msg']);
+        }
+        if ($data['result_code'] != 'SUCCESS') {
+            throw new Exception($data['err_code_des']);
+        }
+        return $data;
     }
 }
