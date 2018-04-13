@@ -48,12 +48,6 @@ class DouBan extends BaseOAuth {
         return $this->getBaseHttp('https://api.douban.com/v2/user/~me');
     }
 
-    protected $apiMap = [
-        'info' => [
-
-        ]
-    ];
-
     /**
      * @return array|bool|mixed
      * @throws \Exception

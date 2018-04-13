@@ -96,7 +96,7 @@ class TaoBao extends BaseOAuth {
      * 获取用户信息
      * @return array
      */
-    public function getInfo() {
+    public function info() {
         $this->identity = $this->get('taobao_user_id');
         $this->username = urldecode($this->get('taobao_user_nick'));
         return $this->get();
