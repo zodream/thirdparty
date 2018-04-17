@@ -757,4 +757,37 @@ class WeChat extends BasePay {
         }
         return $data;
     }
+
+    /**
+     * 退款
+     * @param array $args
+     * @param $certFile
+     * @param null $keyFile
+     * @return bool|mixed|null
+     * @throws Exception
+     */
+    public function refund(array $args, $certFile, $keyFile = null) {
+        $http = $this->getRefund();
+        if (empty($keyFile)) {
+            $http->header(CURLOPT_SSLCERT, (string)$certFile);
+        } else {
+            $http->header([
+                CURLOPT_SSLCERTTYPE => 'PEM',
+                CURLOPT_SSLCERT => (string)$certFile,
+                CURLOPT_SSLKEYTYPE => 'PEM',
+                CURLOPT_SSLKEY => (string)$certFile
+            ]);
+        }
+        $data = $http->parameters($this->merge($args))->text();
+        if (empty($data)) {
+            return false;
+        }
+        if ($data['return_code'] != 'SUCCESS') {
+            throw new Exception($data['return_msg']);
+        }
+        if ($data['result_code'] != 'SUCCESS') {
+            throw new Exception($data['err_code_des']);
+        }
+        return $data;
+    }
 }
