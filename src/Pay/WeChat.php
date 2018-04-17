@@ -69,7 +69,7 @@ class WeChat extends BasePay {
                 '#trade_type',
                 'limit_pay',
                 'sign',
-                'sign_type',
+                'sign_type',   // 支持HMAC-SHA256和MD5
                 'openid', // JSAPI必须
                 'product_id'  //NATIVE 必须
             ]);
@@ -104,6 +104,10 @@ class WeChat extends BasePay {
         ];
     }
 
+    /**
+     * 查询订单
+     * @return Http
+     */
     public function getQuery() {
         return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/orderquery')
             ->maps([
@@ -114,10 +118,15 @@ class WeChat extends BasePay {
                     'out_trade_no'
                 ],
                 '#nonce_str',
-                'sign'
+                'sign',
+                'sign_type',
             ]);
     }
 
+    /**
+     * 关闭订单
+     * @return Http
+     */
     public function getClose() {
         return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/closeorder')
             ->maps([
@@ -125,10 +134,15 @@ class WeChat extends BasePay {
                 '#mch_id',
                 '#out_trade_no',
                 '#nonce_str',
-                'sign'
+                'sign',
+                'sign_type'
             ]);
     }
 
+    /**
+     * 申请退款 需要双向证书
+     * @return Http
+     */
     public function getRefund() {
         return $this->getBaseHttp('https://api.mch.weixin.qq.com/secapi/pay/refund')
             ->maps([
@@ -137,6 +151,7 @@ class WeChat extends BasePay {
                 'device_info',
                 '#nonce_str',
                 'sign',
+                'sign_type' => 'MD5', // 目前支持HMAC-SHA256和MD5，默认为MD5
                 [
                     'transaction_id',
                     'out_trade_no',
@@ -145,10 +160,17 @@ class WeChat extends BasePay {
                 '#total_fee',
                 '#refund_fee',
                 'refund_fee_type',
-                '#op_user_id'
+                '#op_user_id',
+                'refund_desc',
+                'refund_account',
+                'notify_url'
             ]);
     }
 
+    /**
+     * 查询退款
+     * @return Http
+     */
     public function getQueryRefund() {
         return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/refundquery')
             ->maps([
@@ -157,25 +179,65 @@ class WeChat extends BasePay {
                 'device_info',
                 '#nonce_str',
                 'sign',
+                'sign_type' => 'MD5',  // HMAC-SHA256
                 [
                     'transaction_id',  //四选一
                     'out_trade_no',
                     'out_refund_no',
                     'refund_id'
-                ]
+                ],
+                'offset'
             ]);
     }
 
+    /**
+     * 下载对账单
+     * @return Http
+     */
     public function getBill() {
-        return $this->getBaseHttp()
-            ->url('https://api.mch.weixin.qq.com/pay/downloadbill', [
+        return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/downloadbill')
+            ->maps([
                 '#appid',
                 '#mch_id',
                 'device_info',
                 '#nonce_str',
                 'sign',
-                '#bill_date',
-                'bill_type'
+                'sign_type' => 'HMAC-SHA256',
+                '#bill_date',   // Ymd
+                'bill_type' => 'ALL',
+                'tar_type'
+            ]);
+    }
+
+    /**
+     * 下载资金账单 需要双向证书
+     * @return Http
+     */
+    public function getDownloadFundFlow() {
+        return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/downloadfundflow')
+            ->maps([
+                '#appid',
+                '#mch_id',
+                'device_info',
+                '#nonce_str',
+                'sign',
+                'sign_type' => 'HMAC-SHA256',
+                '#bill_date',   // Ymd
+                'account_type' => 'Basic',
+                'tar_type'
+            ]);
+    }
+
+    /**
+     * 获取沙箱密钥
+     * @return Http
+     */
+    public function getSandboxKey() {
+        return $this->getBaseHttp('https://api.mch.weixin.qq.com/sandboxnew/pay/getsignkey')
+            ->maps([
+                '#mch_id',
+                '#nonce_str',
+                'sign'
             ]);
     }
 
@@ -508,6 +570,7 @@ class WeChat extends BasePay {
      * 生成签名
      * @param array $args
      * @return string
+     * @throws Exception
      */
     public function sign($args) {
         if (empty($this->key)) {
@@ -523,7 +586,11 @@ class WeChat extends BasePay {
             }
             $arg .= "{$key}={$item}&";
         }
-        return strtoupper(md5($arg.'key='.$this->key));
+        $signContent = $arg.'key='.$this->key;
+        if (!isset($args['sign_type']) || $args['sign_type'] == 'MD5') {
+            return strtoupper(md5($signContent));
+        }
+        return strtoupper(hash_hmac('sha256', $signContent, $this->key, false));
     }
 
     /**
