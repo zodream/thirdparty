@@ -25,7 +25,9 @@ class WeChat extends BasePay {
             'appid' => '',
             'mch_id' => '',
             'notify_url' => '',
-            'trade_type' => 'APP'
+            'trade_type' => 'APP',
+            'cert_file' => '', cert.pem  如果只填一个并表示合并
+            'key_file' => '' key.pem
         )
      * @var string
      */
@@ -33,15 +35,58 @@ class WeChat extends BasePay {
 
     protected $ignoreKeys = ['sign'];
 
+    /**
+     * 生成完整的网址
+     * @param $path
+     * @return string
+     */
+    public function getUrl($path) {
+        if (strpos($path, '://') !== false) {
+            return $path;
+        }
+        $url = 'https://api.mch.weixin.qq.com/';
+        if ($this->get('debug_mode') === true) {
+            $url .= 'sandboxnew/';
+        }
+        return $url. trim($path, '/');
+    }
+
+    /**
+     * @param null $url
+     * @return $this|Http
+     */
     public function getBaseHttp($url = null) {
         $arg = Str::random(32);
         $this->set([
             'noncestr' => $arg,
             'nonce_str' => $arg
         ]);
-        return parent::getBaseHttp($url)
+        return parent::getBaseHttp($this->getUrl($url))
             ->encode([$this, 'encodeXml'])
             ->decode([$this, 'decodeXml']);
+    }
+
+    /**
+     * @param null $url
+     * @return Http
+     * @throws Exception
+     */
+    public function getBaseHttpWithCert($url = null) {
+        $keyFile = $this->get('key_file');
+        $certFile = $this->get('cert_file');
+        if (empty($certFile)) {
+            throw new Exception('cert file error!');
+        }
+        $http = $this->getBaseHttp($url);
+        if (empty($keyFile)) {
+            return $http->header(CURLOPT_SSLCERT, (string)$certFile);
+        }
+        return $http->header([
+            CURLOPT_SSLCERTTYPE => 'PEM',
+            CURLOPT_SSLCERT => (string)$certFile,
+            CURLOPT_SSLKEYTYPE => 'PEM',
+            CURLOPT_SSLKEY => (string)$certFile
+        ]);
     }
 
     /**
@@ -49,7 +94,7 @@ class WeChat extends BasePay {
      * @return Http
      */
     public function getOrder() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/unifiedorder')
+        return $this->getBaseHttp('pay/unifiedorder')
             ->maps([
                 '#appid',
                 '#mch_id',
@@ -77,7 +122,7 @@ class WeChat extends BasePay {
 
     /**
      * app调起支付参数
-     * @return array
+     * @return string
      * @throws Exception
      */
     public function getAppPay() {
@@ -109,7 +154,7 @@ class WeChat extends BasePay {
      * @return Http
      */
     public function getQuery() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/orderquery')
+        return $this->getBaseHttp('pay/orderquery')
             ->maps([
                 '#appid',
                 '#mch_id',
@@ -128,7 +173,7 @@ class WeChat extends BasePay {
      * @return Http
      */
     public function getClose() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/closeorder')
+        return $this->getBaseHttp('pay/closeorder')
             ->maps([
                 '#appid',
                 '#mch_id',
@@ -142,9 +187,10 @@ class WeChat extends BasePay {
     /**
      * 申请退款 需要双向证书
      * @return Http
+     * @throws Exception
      */
     public function getRefund() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/secapi/pay/refund')
+        return $this->getBaseHttpWithCert('secapi/pay/refund')
             ->maps([
                 '#appid',
                 '#mch_id',
@@ -172,7 +218,7 @@ class WeChat extends BasePay {
      * @return Http
      */
     public function getQueryRefund() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/refundquery')
+        return $this->getBaseHttp('pay/refundquery')
             ->maps([
                 '#appid',
                 '#mch_id',
@@ -195,7 +241,7 @@ class WeChat extends BasePay {
      * @return Http
      */
     public function getBill() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/downloadbill')
+        return $this->getBaseHttp('pay/downloadbill')
             ->maps([
                 '#appid',
                 '#mch_id',
@@ -212,9 +258,10 @@ class WeChat extends BasePay {
     /**
      * 下载资金账单 需要双向证书
      * @return Http
+     * @throws Exception
      */
     public function getDownloadFundFlow() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/pay/downloadfundflow')
+        return $this->getBaseHttpWithCert('pay/downloadfundflow')
             ->maps([
                 '#appid',
                 '#mch_id',
@@ -229,11 +276,32 @@ class WeChat extends BasePay {
     }
 
     /**
+     * 拉取订单评价数据
+     * @return Http
+     * @throws Exception
+     */
+    public function getOrderComment() {
+        return $this->getBaseHttpWithCert('billcommentsp/batchquerycomment')
+            ->maps([
+                '#appid',
+                '#mch_id',
+                'device_info',
+                '#nonce_str',
+                'sign',
+                'sign_type' => 'HMAC-SHA256',
+                '#begin_time',   // YmdHis
+                '#end_time',
+                'offset' => 0,
+                'limit' => 100
+            ]);
+    }
+
+    /**
      * 获取沙箱密钥
      * @return Http
      */
     public function getSandboxKey() {
-        return $this->getBaseHttp('https://api.mch.weixin.qq.com/sandboxnew/pay/getsignkey')
+        return $this->getBaseHttp('pay/getsignkey')
             ->maps([
                 '#mch_id',
                 '#nonce_str',
@@ -260,7 +328,7 @@ class WeChat extends BasePay {
 
     /**
      * 二维码支付回调输出返回
-     * @return array
+     * @return string
      * @throws Exception
      */
     public function getQrReturn() {
@@ -405,6 +473,11 @@ class WeChat extends BasePay {
             ]);
     }
 
+    /**
+     * @param array $data
+     * @return string
+     * @throws Exception
+     */
     protected function encodeXml(array $data) {
         $data[$this->signKey] = $this->sign($data);
         return Xml::specialEncode(
@@ -428,19 +501,18 @@ class WeChat extends BasePay {
      * ]
      * @param array $args
      * @return array|bool|mixed|object
-     * @throws \ErrorException
      * @throws \Exception
      */
     public function order(array $args = array()) {
         $args = $this->getOrder()->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
-            throw new \ErrorException($args['return_msg']);
+            throw new Exception($args['return_msg']);
         }
         if ($args['result_code'] != 'SUCCESS') {
-            throw new \ErrorException($args['err_code_des']);
+            throw new Exception($args['err_code_des']);
         }
         if (!$this->verify($args)) {
-            throw new \InvalidArgumentException('数据验签失败！');
+            throw new Exception('数据验签失败！');
         }
         $this->set($args);
         return $args;
@@ -454,16 +526,15 @@ class WeChat extends BasePay {
      * ]
      * @param array $args
      * @return array|bool|mixed|object
-     * @throws \ErrorException
      * @throws \Exception
      */
     public function queryOrder(array $args = array()) {
         $args = $this->getQuery()->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
-            throw new \ErrorException($args['return_msg']);
+            throw new Exception($args['return_msg']);
         }
         if (!$this->verify($args)) {
-            throw new \InvalidArgumentException('数据验签失败！');
+            throw new Exception('数据验签失败！');
         }
         return $args;
     }
@@ -478,10 +549,10 @@ class WeChat extends BasePay {
     public function closeOrder(array $args = array()) {
         $args = $this->getClose()->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
-            throw new \ErrorException($args['return_msg']);
+            throw new Exception($args['return_msg']);
         }
         if (!$this->verify($args)) {
-            throw new \InvalidArgumentException('数据验签失败！');
+            throw new Exception('数据验签失败！');
         }
         return $args;
     }
@@ -490,7 +561,7 @@ class WeChat extends BasePay {
      * APP支付参数 异步回调必须输出 appCallbackReturn()
      *
      * @param array $args
-     * @return array
+     * @return string
      * @throws Exception
      */
     public function appPay(array $args = array()) {
@@ -598,6 +669,7 @@ class WeChat extends BasePay {
      * @param array $args
      * @param $sign
      * @return bool
+     * @throws Exception
      */
     public function verify(array $args, $sign = null) {
         if (is_null($sign)) {
@@ -641,6 +713,7 @@ class WeChat extends BasePay {
     /**
      * https://pay.weixin.qq.com/wiki/doc/api/native.php?chapter=6_4
      * @return array|mixed|object
+     * @throws Exception
      */
     public function qrCallback() {
         /*$args = $this->callback();
@@ -696,6 +769,7 @@ class WeChat extends BasePay {
      * https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=7_7&index=6
      * @param array $args
      * @return array
+     * @throws Exception
      */
     public function jsPay(array $args = array()) {
         $args['appId'] = $this->get('appid'); //防止微信返回appid
@@ -728,24 +802,11 @@ class WeChat extends BasePay {
     /**
      * 转账给个人
      * @param array $args
-     * @param $certFile cert.pem  如果只填一个并表示合并
-     * @param null $keyFile key.pem
      * @return bool|array
      * @throws Exception
      */
-    public function transfer(array $args, $certFile, $keyFile = null) {
-        $http = $this->getTransfer();
-        if (empty($keyFile)) {
-            $http->header(CURLOPT_SSLCERT, (string)$certFile);
-        } else {
-            $http->header([
-                CURLOPT_SSLCERTTYPE => 'PEM',
-                CURLOPT_SSLCERT => (string)$certFile,
-                CURLOPT_SSLKEYTYPE => 'PEM',
-                CURLOPT_SSLKEY => (string)$certFile
-            ]);
-        }
-        $data = $http->parameters($this->merge($args))->text();
+    public function transfer(array $args) {
+        $data = $this->getTransfer()->parameters($this->merge($args))->text();
         if (empty($data)) {
             return false;
         }
@@ -761,24 +822,11 @@ class WeChat extends BasePay {
     /**
      * 退款
      * @param array $args
-     * @param $certFile
-     * @param null $keyFile
      * @return bool|mixed|null
      * @throws Exception
      */
-    public function refund(array $args, $certFile, $keyFile = null) {
-        $http = $this->getRefund();
-        if (empty($keyFile)) {
-            $http->header(CURLOPT_SSLCERT, (string)$certFile);
-        } else {
-            $http->header([
-                CURLOPT_SSLCERTTYPE => 'PEM',
-                CURLOPT_SSLCERT => (string)$certFile,
-                CURLOPT_SSLKEYTYPE => 'PEM',
-                CURLOPT_SSLKEY => (string)$certFile
-            ]);
-        }
-        $data = $http->parameters($this->merge($args))->text();
+    public function refund(array $args) {
+        $data = $this->getRefund()->parameters($this->merge($args))->text();
         if (empty($data)) {
             return false;
         }
