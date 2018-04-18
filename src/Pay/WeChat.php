@@ -194,7 +194,6 @@ class WeChat extends BasePay {
             ->maps([
                 '#appid',
                 '#mch_id',
-                'device_info',
                 '#nonce_str',
                 'sign',
                 'sign_type' => 'MD5', // 目前支持HMAC-SHA256和MD5，默认为MD5
@@ -222,7 +221,6 @@ class WeChat extends BasePay {
             ->maps([
                 '#appid',
                 '#mch_id',
-                'device_info',
                 '#nonce_str',
                 'sign',
                 'sign_type' => 'MD5',  // HMAC-SHA256
@@ -245,10 +243,9 @@ class WeChat extends BasePay {
             ->maps([
                 '#appid',
                 '#mch_id',
-                'device_info',
                 '#nonce_str',
                 'sign',
-                'sign_type' => 'HMAC-SHA256',
+                'sign_type' => 'MD5',
                 '#bill_date',   // Ymd
                 'bill_type' => 'ALL',
                 'tar_type'
@@ -265,7 +262,6 @@ class WeChat extends BasePay {
             ->maps([
                 '#appid',
                 '#mch_id',
-                'device_info',
                 '#nonce_str',
                 'sign',
                 'sign_type' => 'HMAC-SHA256',
@@ -285,7 +281,6 @@ class WeChat extends BasePay {
             ->maps([
                 '#appid',
                 '#mch_id',
-                'device_info',
                 '#nonce_str',
                 'sign',
                 'sign_type' => 'HMAC-SHA256',
