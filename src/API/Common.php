@@ -141,6 +141,6 @@ class Common extends ThirdParty  {
             'customer' => $data['customer'],
             'sign' => $sign,
             'param' => $param
-        ]);
+        ])->json();
     }
 }
