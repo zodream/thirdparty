@@ -611,17 +611,8 @@ class WeChat extends BasePay {
      * @throws \Exception
      */
     public function refundOrder(array $args = array()) {
-        //第一种方法，cert 与 key 分别属于两个.pem文件
-        //默认格式为PEM，可以注释
-        //curl_setopt($ch,CURLOPT_SSLCERTTYPE,'PEM');
-        //curl_setopt($ch,CURLOPT_SSLCERT,getcwd().'/cert.pem');
-        //默认格式为PEM，可以注释
-        //curl_setopt($ch,CURLOPT_SSLKEYTYPE,'PEM');
-        //curl_setopt($ch,CURLOPT_SSLKEY,getcwd().'/private.pem');
-
         //第二种方式，两个文件合成一个.pem文件
-        $args = $this->getRefund()
-            ->setOption(CURLOPT_SSLCERT, (string)$this->privateKeyFile)
+        $args = $this->setCert($this->getRefund())
             ->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
             throw new Exception($args['return_msg']);
@@ -630,6 +621,25 @@ class WeChat extends BasePay {
             throw new Exception('数据验签失败！');
         }
         return $args;
+    }
+
+    /**
+     * 添加证书
+     * @param Http $http
+     * @return Http
+     */
+    public function setCert(Http $http) {
+        //两个文件合成一个.pem文件
+        if (!empty($this->privateKeyFile)) {
+            return $http->setOption(CURLOPT_SSLCERT, (string)$this->privateKeyFile);
+        }
+        //cert 与 key 分别属于两个.pem文件
+        return $http->setOption([
+            CURLOPT_SSLCERTTYPE => 'PEM',
+            CURLOPT_SSLCERT => (string)$this->get('certFile'),
+            CURLOPT_SSLKEYTYPE => 'PEM',
+            CURLOPT_SSLKEY => (string)$this->get('keyFile')
+        ]);
     }
 
     /**
