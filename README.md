@@ -21,7 +21,7 @@
 
 ## 特别说明
 
-    所有错误都通过 throw new \ErrorException();
+    所有错误都通过 throw new Exception();
     请注意使用 try 捕获
 
 <a name="oauth"></a>
