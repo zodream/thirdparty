@@ -406,7 +406,7 @@ class WeChat extends BasePay {
         return $this->getBaseHttp('https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers')
             ->maps([
                 '#mch_appid:appid',
-                '#mchid',
+                '#mchid:mch_id',
                 'device_info',
                 '#nonce_str',
                 'sign',
@@ -637,8 +637,10 @@ class WeChat extends BasePay {
         return $http->setOption([
             CURLOPT_SSLCERTTYPE => 'PEM',
             CURLOPT_SSLCERT => (string)$this->get('certFile'),
+            CURLOPT_SSLCERTPASSWD => $this->get('mch_id'),
             CURLOPT_SSLKEYTYPE => 'PEM',
-            CURLOPT_SSLKEY => (string)$this->get('keyFile')
+            CURLOPT_SSLKEY => (string)$this->get('keyFile'),
+            CURLOPT_SSLKEYPASSWD => $this->get('mch_id'),
         ]);
     }
 
