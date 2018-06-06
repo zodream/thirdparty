@@ -1,5 +1,6 @@
 <?php
 namespace Zodream\ThirdParty\ALi;
+
 use Zodream\Helpers\Json;
 
 /**
