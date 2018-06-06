@@ -80,14 +80,15 @@ class ZhiMa extends BaseALi {
      * 获取芝麻分
      * @param $token
      * @param $transaction_id
-     * @return mixed|null
+     * @return integer|boolean
      * @throws \Exception
      */
     public function score($token, $transaction_id) {
-        return $this->getScore()->parameters([
+        $data = $this->getScore()->parameters([
             'auth_token' => $token,
             'transaction_id' => $transaction_id
         ])->text();
+        return isset($data['zm_score']) ? $data['zm_score'] : false;
     }
 
     /**
