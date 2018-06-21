@@ -135,6 +135,18 @@ abstract class BaseALi extends ThirdParty {
     }
 
     /**
+     *
+     */
+    public function getRsa() {
+        $rsa = new Rsa();
+        $rsa->setPrivateKey(empty($this->getPrivateKeyFile())
+            || !$this->getPrivateKeyFile()->exist() ? $this->privateKey : $this->getPrivateKeyFile())
+            ->setPublicKey(empty($this->getPublicKeyFile())
+                || !$this->getPublicKeyFile()->exist() ? $this->publicKey : $this->getPublicKeyFile());
+        return $rsa;
+    }
+
+    /**
      * 获取签名类型
      * @return string
      */
