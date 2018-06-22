@@ -19,8 +19,8 @@ abstract class BaseZhiMa extends BaseALi {
                 'sign',
                 'version' => '1.0',
                 'platform' => 'zmop',
-                '#params'
-            ])->encode(function ($data) {
+            ])->parameters($this->get())
+            ->encode(function ($data) {
                 if (array_key_exists('params', $data)
                     && is_array($data['params'])) {
                     $data['params'] = $this->buildQuery($data['params']);

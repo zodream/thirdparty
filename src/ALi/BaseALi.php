@@ -286,10 +286,6 @@ abstract class BaseALi extends ThirdParty {
     }
 
     protected function isEmpty($value) {
-        static $validator;
-        if (empty($validator)) {
-            $validator = new RequiredFilter();
-        }
-        return !$validator->validate($value);
+        return Http::isEmpty($value);
     }
 }
