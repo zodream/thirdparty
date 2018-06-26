@@ -1,11 +1,12 @@
 <?php
 namespace Zodream\ThirdParty\ALi;
 
-use Zodream\Domain\Filter\Filters\RequiredFilter;
+use Zodream\Helpers\Arr;
 use Zodream\Helpers\Json;
 use Zodream\Http\Http;
 use Zodream\ThirdParty\ThirdParty;
 use Zodream\Disk\File;
+use Exception;
 
 /**
  * Class BaseALi
@@ -93,11 +94,16 @@ abstract class BaseALi extends ThirdParty {
             })->parameters($this->get())->parameters([
                 'timestamp' => date('Y-m-d H:i:s')
             ])->decode(function ($data) {
-                $data = Json::decode($data);
+                if (!is_array($data)) {
+                    $data = iconv('gb2312', 'utf8//IGNORE', $data);
+                    $data = Json::decode($data);
+                }
                 if ($this->verify($data)) {
                     return reset($data);
                 }
-                throw new \Exception('结果验证失败！');
+                throw new Exception(
+                    __('verify response error!')
+                );
             });
     }
 
@@ -197,7 +203,9 @@ abstract class BaseALi extends ThirdParty {
             $res = openssl_get_privatekey($priKey);
         }
         if (!$res) {
-            throw new \Exception('您使用的私钥格式错误，请检查RSA私钥配置');
+            throw new Exception(
+                __('error private key')
+            );
         }
         if (self::RSA2 == $this->getSignType()) {
             openssl_sign($content, $sign, $res, OPENSSL_ALGO_SHA256);
@@ -239,6 +247,9 @@ abstract class BaseALi extends ThirdParty {
         if (array_key_exists('sign_type', $params)) {
             $this->sign_type = strtoupper($params['sign_type']);
         }
+        if (Arr::isMultidimensional($params)) {
+            $params = reset($params);
+        }
         $content = $this->getSignContent($params);
         $result = $this->verifyContent($content, $sign);
         if (!$result && strpos($content, '\\/') > 0) {
@@ -266,7 +277,9 @@ abstract class BaseALi extends ThirdParty {
             $res = openssl_get_publickey($pubKey);
         }
         if (!$res) {
-            throw new \Exception('支付宝RSA公钥错误。请检查公钥文件格式是否正确');
+            throw new Exception(
+                __('error alipay public key')
+            );
         }
 
         //调用openssl内置方法验签，返回bool值
