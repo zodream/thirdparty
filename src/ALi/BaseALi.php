@@ -1,9 +1,9 @@
 <?php
 namespace Zodream\ThirdParty\ALi;
 
-use Zodream\Helpers\Arr;
 use Zodream\Helpers\Json;
 use Zodream\Http\Http;
+use Zodream\Service\Factory;
 use Zodream\ThirdParty\ThirdParty;
 use Zodream\Disk\File;
 use Exception;
@@ -94,16 +94,7 @@ abstract class BaseALi extends ThirdParty {
             })->parameters($this->get())->parameters([
                 'timestamp' => date('Y-m-d H:i:s')
             ])->decode(function ($data) {
-                if (!is_array($data)) {
-                    $data = iconv('gb2312', 'utf8//IGNORE', $data);
-                    $data = Json::decode($data);
-                }
-                if ($this->verify($data)) {
-                    return reset($data);
-                }
-                throw new Exception(
-                    __('verify response error!')
-                );
+                return $this->verifyResponse($data);
             });
     }
 
@@ -240,23 +231,71 @@ abstract class BaseALi extends ThirdParty {
      * @return bool
      * @throws \Exception
      */
-    public function verify(array $params, $sign = null) {
-        if (is_null($sign)) {
-            $sign = $params[$this->signKey];
-        }
-        if (array_key_exists('sign_type', $params)) {
-            $this->sign_type = strtoupper($params['sign_type']);
-        }
-        if (Arr::isMultidimensional($params)) {
-            $params = reset($params);
-        }
-        $content = $this->getSignContent($params);
+    public function verify($params, $sign = null) {
+        list($content, $sign) = $this->getSignAndSource($params, $sign);
         $result = $this->verifyContent($content, $sign);
         if (!$result && strpos($content, '\\/') > 0) {
             $content = str_replace('\\/', '/', $content);
             return $this->verifyContent($content, $sign);
         }
         return $result;
+    }
+
+    public function verifyResponse($data) {
+        if (is_array($data)) {
+            if ($this->verify($data)) {
+                return reset($data);
+            }
+            throw new Exception(
+                __('verify response error!')
+            );
+        }
+        $args = iconv('gb2312', 'utf8//IGNORE', $data);
+        Factory::log()->info($args);
+        $args = Json::decode($args);
+        if (empty($args)) {
+            throw new Exception(
+                __('verify response error!')
+            );
+        }
+        $nodeName = key($args);
+        $source = $this->getSource($data, $nodeName);
+        if ($this->verify($source, $args[$this->signKey])) {
+            return reset($args);
+        }
+        throw new Exception(
+            __('verify response error!')
+        );
+    }
+
+    protected function getSource($data, $nodeName) {
+        $nodeIndex = strpos($data, $nodeName);
+        $signDataStartIndex = $nodeIndex + strlen($nodeName) + 2;
+        $signIndex = strrpos($data, sprintf('"%s"', $this->signKey));
+        // 签名前-逗号
+        $signDataEndIndex = $signIndex - 1;
+        $indexLen = $signDataEndIndex - $signDataStartIndex;
+        if ($indexLen < 0) {
+            return null;
+        }
+        return substr($data, $signDataStartIndex, $indexLen);
+    }
+
+    protected function getSignAndSource($params, $sign) {
+        if (!is_array($params)) {
+            return [$params, $sign];
+        }
+        if (is_null($sign)) {
+            $sign = $params[$this->signKey];
+        }
+        if (array_key_exists('sign_type', $params)) {
+            $this->sign_type = strtoupper($params['sign_type']);
+        }
+        if (isset($params[$this->signKey])) {
+            $params = reset($params);
+        }
+        $content = $this->getSignContent($params);
+        return [$content, $sign];
     }
 
     public function verifyContent($content, $sign) {
