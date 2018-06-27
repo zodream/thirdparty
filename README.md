@@ -148,6 +148,8 @@ die($pay->notifySuccess()); //成功时输出
 <a name="pay-alipay"></a>
 ### 支付宝APP支付
 
+### 特别注意：支付宝签名需要包含 sign_type, 验签时不能包含 sign_type
+
 配置
 ```PHP
 'alipay' => array(

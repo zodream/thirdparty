@@ -6,11 +6,18 @@ use Zodream\Infrastructure\Security\Rsa as BaseRsa;
 class Rsa extends BaseRsa {
 
     public function sign($data) {
-        return $this->privateKeyEncrypt($data);
+        if (empty($this->privateKey)) {
+            return false;
+        }
+        $encrypted = '';
+        if (!openssl_sign($data, $encrypted, $this->privateKey, $this->padding)) {
+            return false;
+        }
+        return base64_encode($encrypted);
     }
 
     public function verify($data, $sign) {
-        return (bool)openssl_verify($data, base64_decode($sign), $this->publicKey);
+        return (bool)openssl_verify($data, base64_decode($sign), $this->publicKey, $this->padding);
     }
 
     /**

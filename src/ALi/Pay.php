@@ -4,6 +4,7 @@ namespace Zodream\ThirdParty\ALi;
 
 use Zodream\Http\Http;
 use Zodream\Service\Factory;
+use Exception;
 
 class Pay extends BaseALi {
 
@@ -52,6 +53,7 @@ class Pay extends BaseALi {
                     'product_code' => 'QUICK_WAP_WAY',
                     '#total_amount',
                     '#subject',
+                    '#seller_id',
                     'body',
                     'promo_params',
                     'passback_params',
@@ -63,7 +65,7 @@ class Pay extends BaseALi {
                     'disable_pay_channels',
                     'auth_token',
                     'store_id',
-                    'quit_url',
+                    '#quit_url',
                     'ext_user_info'
                 ]
             ]);
@@ -159,20 +161,55 @@ class Pay extends BaseALi {
             ]);
     }
 
+    public function getQuery() {
+        return $this->getBaseHttp()
+            ->appendMaps([
+                'method' => 'alipay.trade.query',
+                '#biz_content' => [
+                    [
+                        'out_trade_no',
+                        'trade_no'
+                    ]
+                ]
+            ]);
+    }
 
     /**
      *
      * @return mixed
      * @throws \Exception
      */
-    public function callback() {
-        Factory::log()
-            ->info('ALIPAY CALLBACK: '.var_export($_POST, true));
+    public function responseNotify() {
         $data = $_POST;//Requests::isPost() ? $_POST : $_GET;
+        Factory::log()
+            ->info('ALIPAY NOTIFY: '.var_export($data, true));
         if (!$this->verify($data)) {
-            throw new \Exception('验签失败！');
+            throw new Exception(
+                __('notify verify error')
+            );
         }
         return $data;
     }
+
+    public function responseReturn() {
+        $data = $_GET;//Requests::isPost() ? $_POST : $_GET;
+        Factory::log()
+            ->info('ALIPAY RETURN: '.var_export($data, true));
+        if (!$this->verify($data)) {
+            throw new Exception(
+                __('return verify error')
+            );
+        }
+        return $data;
+    }
+
+    public function wapPay() {
+        return static::renderForm($this->getWapPay());
+    }
+
+    public function query() {
+        return $this->getQuery()->text();
+    }
+
 
 }

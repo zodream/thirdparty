@@ -1,6 +1,7 @@
 <?php
 namespace Zodream\ThirdParty\ALi;
 
+use Zodream\Helpers\Arr;
 use Zodream\Helpers\Json;
 use Zodream\Http\Http;
 use Zodream\Service\Factory;
@@ -32,7 +33,8 @@ abstract class BaseALi extends ThirdParty {
     protected $signKey = 'sign';
 
     protected $ignoreKeys = [
-        'sign'
+        'sign',
+        'sign_type'
     ];
 
     /**
@@ -132,14 +134,16 @@ abstract class BaseALi extends ThirdParty {
     }
 
     /**
-     *
+     * 获取rsa
      */
     public function getRsa() {
         $rsa = new Rsa();
         $rsa->setPrivateKey(empty($this->getPrivateKeyFile())
             || !$this->getPrivateKeyFile()->exist() ? $this->privateKey : $this->getPrivateKeyFile())
             ->setPublicKey(empty($this->getPublicKeyFile())
-                || !$this->getPublicKeyFile()->exist() ? $this->publicKey : $this->getPublicKeyFile());
+                || !$this->getPublicKeyFile()->exist() ? $this->publicKey : $this->getPublicKeyFile())
+            ->setPadding(self::RSA2 == $this->getSignType()
+                ? OPENSSL_ALGO_SHA256 : OPENSSL_PKCS1_PADDING);
         return $rsa;
     }
 
@@ -171,49 +175,27 @@ abstract class BaseALi extends ThirdParty {
 
 
     /**
-     * 签名
+     * 签名 签名必须包括sign_type
      * @param array|string $content
      * @return string
      * @throws \Exception
      */
     public function sign($content) {
         if (is_array($content)) {
+            $this->ignoreKeys = ['sign'];
             $content = $this->getSignContent($content);
         }
         if ($this->getSignType() == self::MD5) {
             return md5($content.$this->key);
         }
-        if (empty($this->getPrivateKeyFile())
-            || !$this->getPrivateKeyFile()->exist()) {
-            $priKey = $this->privateKey;
-            $res = "-----BEGIN RSA PRIVATE KEY-----\n" .
-                wordwrap($priKey, 64, "\n", true) .
-                "\n-----END RSA PRIVATE KEY-----";
-        }else {
-            $priKey = $this->getPrivateKeyFile()->read();
-            $res = openssl_get_privatekey($priKey);
-        }
-        if (!$res) {
-            throw new Exception(
-                __('error private key')
-            );
-        }
-        if (self::RSA2 == $this->getSignType()) {
-            openssl_sign($content, $sign, $res, OPENSSL_ALGO_SHA256);
-        } else {
-            openssl_sign($content, $sign, $res);
-        }
-        if (is_resource($res)) {
-            openssl_free_key($res);
-        }
-        return base64_encode($sign);
+        return $this->getRsa()->sign($content);
     }
 
     protected function getSignContent(array $params) {
         ksort($params);
         $args = [];
         foreach ($params as $key => $item) {
-            if ($this->isEmpty($item)
+            if (Http::isEmpty($item)
                 || in_array($key, $this->ignoreKeys)
                 || strpos($item, '@') === 0
             ) {
@@ -225,7 +207,7 @@ abstract class BaseALi extends ThirdParty {
     }
 
     /**
-     * 验签
+     * 验签 验签不包括 sign_type
      * @param array $params
      * @param string $sign
      * @return bool
@@ -291,7 +273,8 @@ abstract class BaseALi extends ThirdParty {
         if (array_key_exists('sign_type', $params)) {
             $this->sign_type = strtoupper($params['sign_type']);
         }
-        if (isset($params[$this->signKey])) {
+        if (isset($params[$this->signKey])
+            && Arr::isMultidimensional($params)) {
             $params = reset($params);
         }
         $content = $this->getSignContent($params);
@@ -302,42 +285,20 @@ abstract class BaseALi extends ThirdParty {
         if ($this->getSignType() == self::MD5) {
             return md5($content. $this->key) == $sign;
         }
-        if(empty($this->getPublicKeyFile())
-            || !$this->getPublicKeyFile()->exist()){
-
-            $pubKey= $this->publicKey;
-            $res = "-----BEGIN PUBLIC KEY-----\n" .
-                wordwrap($pubKey, 64, "\n", true) .
-                "\n-----END PUBLIC KEY-----";
-        }else {
-            //读取公钥文件
-            $pubKey = $this->getPublicKeyFile()->read();
-            //转换为openssl格式密钥
-            $res = openssl_get_publickey($pubKey);
-        }
-        if (!$res) {
-            throw new Exception(
-                __('error alipay public key')
-            );
-        }
-
-        //调用openssl内置方法验签，返回bool值
-
-        if (self::RSA2 == $this->getSignType()) {
-            $result = (bool)openssl_verify($content,
-                base64_decode($sign), $res, OPENSSL_ALGO_SHA256);
-        } else {
-            $result = (bool)openssl_verify($content, base64_decode($sign), $res);
-        }
-
-        //释放资源
-        if (is_resource($res)) {
-            openssl_free_key($res);
-        }
-        return $result;
+        return $this->getRsa()->verify($content, $sign);
     }
 
-    protected function isEmpty($value) {
-        return Http::isEmpty($value);
+    public static function renderForm($http, $isReady = true) {
+        $html = '<form id="alipaysubmit" name="alipaysubmit" action="'.$http->getUrl().'?charset=utf-8" method="POST">';
+        $data = $http->getPostSource();
+        foreach ($data as $key => $item) {
+            $html .= '<input type="hidden" name="'.$key.'" value=\''.
+                str_replace('\'', "&apos;", $item).'\'>';
+        }
+        $html .= '<button type="submit">Submit</button></form>';
+        if ($isReady) {
+            $html .= '<script>document.forms[\'alipaysubmit\'].submit();</script>';
+        }
+        return $html;
     }
 }
