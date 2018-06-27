@@ -159,7 +159,7 @@ abstract class BaseALi extends ThirdParty {
     protected function encodeContent(array $args) {
         $data = [];
         foreach ($args as $key => $item) {
-            $data[] = sprintf('"%s"="%s"', $key, $item);
+            $data[] = sprintf('"%s":"%s"', $key, $item);
         }
         $arg = '{'.implode(',', $data).'}';
         if (!empty($this->encryptKey)
