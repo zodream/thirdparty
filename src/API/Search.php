@@ -12,24 +12,27 @@ class Search extends ThirdParty {
 
     public function getBaidu() {
         return $this->getHttp()
-            ->url('http://data.zz.baidu.com/urls')
-            ->maps([
+            ->url('http://data.zz.baidu.com/urls', [
                 '#site',
                 '#token'
+            ])->maps([
+                '#urls'
             ]);
     }
 
     /**
      * INITIATIVE PUT URLS TO BAIDU
-     * @param array $args
+     * @param array $urls
      * @return array
      * @throws \Exception
      */
-    public function putBaiDu(array $args) {
+    public function putBaiDu(array $urls) {
         return $this->getBaidu()->setHeader([
             'Content-Type' => 'text/plain'
-        ])->encode(function ($data) {
-            return implode("\n", $data);
+        ])->parameters($this->merge([
+            'urls' => $urls
+        ]))->encode(function ($data) {
+            return implode("\n", $data['urls']);
         })->json();
     }
 
