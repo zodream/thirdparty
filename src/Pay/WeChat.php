@@ -691,17 +691,32 @@ class WeChat extends BasePay {
      * @throws Exception
      */
     public function callback() {
-        $args = Xml::specialDecode(app('request')->input());
+        $xml = Request::input();
+        if (empty($xml)) {
+            throw new Exception(
+                __('xml error')
+            );
+        }
+        /**
+         * 禁止引用外部xml实体
+         */
+        $disableLibxmlEntityLoader = libxml_disable_entity_loader(true);
+        $args = Xml::specialDecode($xml);
+        libxml_disable_entity_loader($disableLibxmlEntityLoader);
         Factory::log()
             ->info('WECHAT PAY CALLBACK: '.app('request')->input());
         if (!is_array($args)) {
-            throw new Exception('非法数据');
+            throw new Exception(
+                __('xml error')
+            );
         }
         if ($args['return_code'] != 'SUCCESS') {
             throw new Exception($args['return_msg']);
         }
         if (!$this->verify($args)) {
-            throw new Exception('数据验签失败！');
+            throw new Exception(
+                __('verify sign error')
+            );
         }
         return $args;
     }
@@ -800,7 +815,9 @@ class WeChat extends BasePay {
             throw new Exception($args['return_msg']);
         }
         if (!$this->verify($args)) {
-            throw new Exception('数据验签失败！');
+            throw new Exception(
+                __('verify sign error')
+            );
         }
         $this->set($args);
         return $args;
