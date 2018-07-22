@@ -54,7 +54,7 @@ class WeiMoB extends BaseOAuth {
      * @throws \Exception
      */
     public function callback() {
-        $state = Request::get('state', '');
+        $state = app('request')->get('state', '');
         if (strpos($state, 'sign:') !== 0) {
             return parent::callback();
         }
@@ -71,7 +71,7 @@ class WeiMoB extends BaseOAuth {
         if ($data['sign'] != md5($this->get('client_secret').$data['endTime'].$data['versionName'])) {
             return false;
         }
-        $code = Request::get('code');
+        $code = app('request')->get('code');
         if (empty($code)) {
             return false;
         }
