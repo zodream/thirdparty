@@ -13,7 +13,6 @@ use Zodream\Image\QrCode;
 use Zodream\Disk\File;
 use Zodream\Helpers\Str;
 use Zodream\Helpers\Xml;
-use Zodream\Infrastructure\Http\Request;
 use Zodream\Http\Uri;
 use Zodream\Service\Factory;
 use Exception;
@@ -691,7 +690,7 @@ class WeChat extends BasePay {
      * @throws Exception
      */
     public function callback() {
-        $xml = Request::input();
+        $xml = app('request')->input();
         if (empty($xml)) {
             throw new Exception(
                 __('xml error')
