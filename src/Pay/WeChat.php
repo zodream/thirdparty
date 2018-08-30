@@ -204,7 +204,6 @@ class WeChat extends BasePay {
                 '#total_fee',
                 '#refund_fee',
                 'refund_fee_type',
-                '#op_user_id',
                 'refund_desc',
                 'refund_account',
                 'notify_url'
@@ -606,7 +605,6 @@ class WeChat extends BasePay {
      * 退款
      * @param array $args
      * @return array|bool|mixed|object
-     * @throws \ErrorException
      * @throws \Exception
      */
     public function refundOrder(array $args = array()) {
@@ -615,6 +613,9 @@ class WeChat extends BasePay {
             ->parameters($this->merge($args))->text();
         if ($args['return_code'] != 'SUCCESS') {
             throw new Exception($args['return_msg']);
+        }
+        if ($args['result_code'] != 'SUCCESS') {
+            throw new Exception($args['err_code_des']);
         }
         if (!$this->verify($args)) {
             throw new Exception('数据验签失败！');
