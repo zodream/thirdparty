@@ -21,6 +21,7 @@ use Zodream\Infrastructure\Http\Request;
  * @property string $username
  * @property string $sex
  * @property string $avatar
+ * @property string $email
  */
 abstract class BaseOAuth extends ThirdParty  {
 

@@ -15,7 +15,7 @@ class GitHub extends BaseOAuth {
             ->url('https://github.com/login/oauth/authorize', [
                 '#client_id',
                 '#redirect_uri',
-                '#scope',
+                'scope', //=> 'user',
                 'state',
                 'allow_signup'
             ]);
@@ -38,9 +38,13 @@ class GitHub extends BaseOAuth {
         return $this->getBaseHttp()
             ->url('https://api.github.com/user', [
                 '#access_token',
-            ])->setHeader([
-                'Authorization' => 'token OAUTH-TOKEN'
-            ]);
+            ])
+            ->setHeader([
+                'Accept' => 'application/vnd.github.v3+json',
+                'User-Agent' => 'zodream', // 必须有请求头
+                'Authorization' => 'token '.$this->get('access_token')
+            ])
+            ;
     }
 
     /**
@@ -53,8 +57,12 @@ class GitHub extends BaseOAuth {
         if (!array_key_exists('access_token', $access)) {
             return false;
         }
-        $access['identity'] = $access['access_token'];
         $this->set($access);
+        $user = $this->getInfo()->json();
+        $user['identity'] = $user['id'];
+        $user['username'] = $user['login'];
+        $user['avatar'] = $user['avatar_url'];
+        $this->set($user);
         return $access;
     }
 
@@ -63,6 +71,6 @@ class GitHub extends BaseOAuth {
      * @throws \Exception
      */
     public function info() {
-        return $this->getInfo()->json();
+        return $this->get();
     }
 }
