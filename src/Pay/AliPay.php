@@ -11,6 +11,7 @@ use Zodream\Disk\FileException;
 use Zodream\Http\Http;
 use Zodream\Http\Uri;
 use Zodream\Service\Factory;
+use Exception;
 
 class AliPay extends BasePay {
 
@@ -31,12 +32,6 @@ class AliPay extends BasePay {
         'sign',
         'sign_type'
     ];
-
-    /**
-     * 支付宝公钥
-     * @var string
-     */
-    protected $publicKey = '';
 
     public function getQuery() {
         return $this->getBaseHttp()
@@ -233,6 +228,27 @@ class AliPay extends BasePay {
         return $content.'&sign='.'"'.$data['sign'].'"'.'&sign_type='.'"'.$data['sign_type'].'"';
     }
 
+    public function getRefundOrder() {
+        return $this->getBaseHttp()
+            ->url('https://mapi.alipay.com/gateway.do', [
+                'service' => 'refund_fastpay_by_platform_pwd',
+                '#partner',
+                '_input_charset' => 'UTF-8',
+                'sign_type' => 'MD5',
+                'sign',
+                'notify_url',
+                [
+                    'seller_email',
+                    'seller_user_id'
+                ],
+                '#refund_date',   //yyyy-MM-dd HH:mm:ss
+                '#batch_no',
+                '#batch_num' => 1,
+                '#detail_data' // 第一笔交易退款数据集#第二笔交易退款数据集
+                //交易退款数据集的格式为：原付款支付宝交易号^退款总金额^退款理由
+            ], [$this, 'encodeSign']);
+    }
+
     public function getDeclareOrder() {
         return $this->getBaseHttp()
             ->url('https://mapi.alipay.com/gateway.do', [
@@ -254,12 +270,11 @@ class AliPay extends BasePay {
             ], [$this, 'encodeSign']);
     }
 
-    public function __construct(array $config = array()) {
-        parent::__construct($config);
-        if ($this->has('publicKey')) {
-            $this->publicKey = $this->get('publicKey');
-        }
+
+    public function setSignType($arg = null) {
+        parent::setSignType($arg);
         $this->set('sign_type', $this->signType);
+        return $this;
     }
 
     protected function encodeSign(array $data) {
@@ -382,7 +397,7 @@ class AliPay extends BasePay {
      *
      * @param string|array $content
      * @return string
-     * @throws FileException
+     * @throws Exception
      */
     public function sign($content) {
         if (is_array($content)) {
@@ -396,17 +411,26 @@ class AliPay extends BasePay {
             && $this->signType != self::RSA2) {
             return null;
         }
-        if (!$this->privateKeyFile->exist()) {
-            throw new FileException('私钥文件不存在');
+        $res = $this->getPrivateKeyResource();
+        if (empty($res)) {
+            throw new Exception('RSA私钥错误');
         }
-        $res = openssl_get_privatekey($this->privateKeyFile->read());
         openssl_sign($content, $sign, $res,
             $this->signType == self::RSA ? OPENSSL_ALGO_SHA1 : OPENSSL_ALGO_SHA256);
-        openssl_free_key($res);
+        if (is_resource($res)) {
+            openssl_free_key($res);
+        }
         //base64编码
         return base64_encode($sign);
     }
 
+    /**
+     * 验签
+     * @param array $params
+     * @param null $sign
+     * @return bool
+     * @throws Exception
+     */
     public function verify(array $params, $sign = null) {
         if (is_null($sign)) {
             $sign = $params[$this->signKey];
@@ -423,53 +447,30 @@ class AliPay extends BasePay {
         return $result;
     }
 
+    /**
+     * @param $content
+     * @param $sign
+     * @return bool
+     * @throws Exception
+     */
     public function verifyContent($content, $sign) {
         if ($this->signType == self::MD5) {
             return md5($content. $this->key) == $sign;
         }
-        return $this->checkRsa($content, $sign);
-    }
-
-    /**
-     * 根据公钥地址验签
-     * @param string $content
-     * @param string $sign
-     * @return bool
-     * @throws FileException
-     */
-    protected function checkRsaByFile($content, $sign) {
-        if (!$this->publicKeyFile->exist()) {
-            throw new FileException('公钥文件不存在');
+        if ($this->signType != self::RSA
+            && $this->signType != self::RSA2) {
+            return false;
         }
-        //转换为openssl格式密钥
-        $res = openssl_get_publickey($this->publicKeyFile->read());
-        if(!$res){
-            throw new \InvalidArgumentException('公钥格式错误');
+        $res = $this->getPublicKeyResource();
+        if (!$res) {
+            throw new Exception('支付宝RSA公钥错误。请检查公钥文件格式是否正确');
         }
-        //调用openssl内置方法验签，返回bool值
         $result = (bool)openssl_verify($content, base64_decode($sign), $res,
             $this->signType == self::RSA ? OPENSSL_ALGO_SHA1 : OPENSSL_ALGO_SHA256);
-        //释放资源
-        openssl_free_key($res);
-        return $result;
-    }
-
-    /**
-     * 验签
-     * @param string $content
-     * @param string $sign
-     * @return bool
-     */
-    protected function checkRsa($content, $sign) {
-        $res = "-----BEGIN PUBLIC KEY-----\n" .
-            wordwrap($this->publicKey, 64, "\n", true) .
-            "\n-----END PUBLIC KEY-----";
-
-        if (!$res) {
-            throw new \InvalidArgumentException('支付宝RSA公钥错误。请检查公钥文件格式是否正确');
+        if (is_resource($res)) {
+            openssl_free_key($res);
         }
-        return (bool)openssl_verify($content, base64_decode($sign), $res,
-            $this->signType == self::RSA ? OPENSSL_ALGO_SHA1 : OPENSSL_ALGO_SHA256);
+        return $result;
     }
 
     protected function getSignContent(array $params) {
@@ -595,6 +596,16 @@ class AliPay extends BasePay {
      */
     public function wapPay($args = array()) {
         return $this->getWapPay()->parameters($this->merge($args))->getUrl();
+    }
+
+    /**
+     * 退款
+     * @param array $args
+     * @return Uri
+     * @throws Exception
+     */
+    public function refundOrder($args = array()) {
+        return $this->getRefundOrder()->parameters($this->merge($args))->getUrl();
     }
 
     /**
