@@ -10,7 +10,7 @@ use Zodream\ThirdParty\ThirdParty;
 
 class Search extends ThirdParty {
 
-    public function getBaidu() {
+    public function getBaiDu() {
         return $this->getHttp()
             ->url('http://data.zz.baidu.com/urls', [
                 '#site',
@@ -27,7 +27,7 @@ class Search extends ThirdParty {
      * @throws \Exception
      */
     public function putBaiDu(array $urls) {
-        return $this->getBaidu()->setHeader([
+        return $this->getBaiDu()->setHeader([
             'Content-Type' => 'text/plain'
         ])->parameters($this->merge([
             'urls' => $urls
