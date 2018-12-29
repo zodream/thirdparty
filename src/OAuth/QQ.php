@@ -74,7 +74,7 @@ class QQ extends BaseOAuth {
     public function getInfo() {
         return $this->getBaseHttp()
             ->url('https://graph.qq.com/user/get_user_info', [
-                    '#client_id:oauth_consumer_key',
+                    '#oauth_consumer_key:client_id',
                     '#openid',
                     '#access_token'
                 ])->decode([$this, 'decodeJson']);
