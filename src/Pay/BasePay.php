@@ -141,9 +141,9 @@ abstract class BasePay extends ThirdParty  {
         if (empty($this->privateKey)) {
             return false;
         }
-        return "-----BEGIN PRIVATE KEY-----\n" .
+        return "-----BEGIN RSA PRIVATE KEY-----\n" .
             wordwrap($this->privateKey, 64, "\n", true) .
-            "\n-----END PRIVATE KEY-----";
+            "\n-----END RSA PRIVATE KEY-----";
     }
 
     /**

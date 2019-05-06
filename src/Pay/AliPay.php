@@ -403,17 +403,14 @@ class AliPay extends BasePay {
         if (is_array($content)) {
             $content = $this->getSignContent($content);
         }
+        $res = $this->getPrivateKeyResource();
         if ($this->signType == self::MD5
-            || empty($this->privateKeyFile)) {
+            || empty($res)) {
             return md5($content.$this->key);
         }
         if ($this->signType != self::RSA
             && $this->signType != self::RSA2) {
             return null;
-        }
-        $res = $this->getPrivateKeyResource();
-        if (empty($res)) {
-            throw new Exception('RSA私钥错误');
         }
         openssl_sign($content, $sign, $res,
             $this->signType == self::RSA ? OPENSSL_ALGO_SHA1 : OPENSSL_ALGO_SHA256);
