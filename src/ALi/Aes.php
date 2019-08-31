@@ -7,7 +7,7 @@ namespace Zodream\ThirdParty\ALi;
  * Date: 2016/12/6
  * Time: 19:37
  */
-use Zodream\Infrastructure\Security\BaseSecurity;
+use Zodream\Helpers\Security\BaseSecurity;
 
 class Aes extends BaseSecurity {
 

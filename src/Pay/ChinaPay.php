@@ -45,6 +45,11 @@ class ChinaPay extends BasePay {
         'CertId'
     ];
 
+    /**
+     * ChinaPay constructor.
+     * @param array $config
+     * @throws Exception
+     */
     public function __construct(array $config = array()) {
         parent::__construct($config);
         $this->password = $this->get('password', '');

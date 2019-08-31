@@ -113,7 +113,11 @@ class WeChat extends BaseOAuth {
 
     public function webLogin(array $args = []) {
         $state = Str::randomNumber(7);
-        Factory::session()->set('state', $state);
+        if (function_exists('session')) {
+            session([
+                'state' => $state
+            ]);
+        }
         $this->set('state', $state);
         $data = json_encode(Http::getMapParameters([
             'id' => 'login_container',

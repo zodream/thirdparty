@@ -233,7 +233,7 @@ abstract class BaseALi extends ThirdParty {
             );
         }
         $args = iconv('gb2312', 'utf8//IGNORE', $data);
-        Factory::log()->info($args);
+        Http::log($args);
         $args = Json::decode($args);
         if (empty($args)) {
             throw new Exception(
@@ -288,7 +288,7 @@ abstract class BaseALi extends ThirdParty {
         return $this->getRsa()->verify($content, $sign);
     }
 
-    public static function renderForm($http, $isReady = true) {
+    public static function renderForm(Http $http, $isReady = true) {
         $html = '<form id="alipaysubmit" name="alipaysubmit" action="'.$http->getUrl().'?charset=utf-8" method="POST">';
         $data = $http->getPostSource();
         foreach ($data as $key => $item) {

@@ -1,7 +1,7 @@
 <?php
 namespace Zodream\ThirdParty\ALi;
 
-use Zodream\Infrastructure\Security\Rsa as BaseRsa;
+use Zodream\Helpers\Security\Rsa as BaseRsa;
 
 class Rsa extends BaseRsa {
 

@@ -8,7 +8,6 @@ namespace Zodream\ThirdParty\OAuth;
  * Time: 9:19
  */
 use Zodream\Http\Http;
-use Zodream\Infrastructure\Http\Request;
 
 class WeiMoB extends BaseOAuth {
 

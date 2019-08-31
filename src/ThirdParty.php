@@ -9,11 +9,12 @@ namespace Zodream\ThirdParty;
  */
 use Zodream\Helpers\Str;
 use Zodream\Http\Http;
-use Zodream\Infrastructure\Base\MagicObject;
 use Zodream\Http\Uri;
-use Zodream\Service\Factory;
 
-abstract class ThirdParty extends MagicObject {
+abstract class ThirdParty {
+
+    protected $__attributes = [];
+
     /**
      * KEY IN CONFIG
      * @var string
@@ -22,7 +23,9 @@ abstract class ThirdParty extends MagicObject {
 
     public function __construct($config = array()) {
         if (empty($config)) {
-            $this->set(Factory::config($this->configKey));
+            if (function_exists('config')) {
+                $this->set(config($this->configKey));
+            }
             return;
         }
         if (array_key_exists($this->configKey, $config)
@@ -71,6 +74,64 @@ abstract class ThirdParty extends MagicObject {
     }
 
     /**
+     * 合并数组并返回新数组
+     * @param array $data
+     * @return array
+     */
+    public function merge(array $data) {
+        return array_merge($this->__attributes, $data);
+    }
+
+    public function get($key = null, $default = null) {
+        if (empty($key)) {
+            return $this->__attributes;
+        }
+        if (!is_array($this->__attributes)) {
+            $this->__attributes = (array)$this->__attributes;
+        }
+        if ($this->has($key)) {
+            return $this->__attributes[$key];
+        }
+        return $default;
+    }
+
+    /**
+     * 判断是否有
+     * @param string|null $key 如果为null 则判断是否有数据
+     * @return bool
+     */
+    public function has($key = null) {
+        if (is_null($key)) {
+            return !empty($this->__attributes);
+        }
+        if (empty($this->__attributes)) {
+            return false;
+        }
+        return isset($this->__attributes[$key]) || array_key_exists($key, $this->__attributes);
+    }
+
+    /**
+     * 设置值
+     * @param string|array $key
+     * @param string $value
+     * @return $this
+     */
+    public function set($key, $value = null) {
+        if (is_object($key)) {
+            $key = (array)$key;
+        }
+        if (is_array($key)) {
+            $this->__attributes = array_merge($this->__attributes, $key);
+            return $this;
+        }
+        if (empty($key)) {
+            return $this;
+        }
+        $this->__attributes[$key] = $value;
+        return $this;
+    }
+
+    /**
      * _call
      * 魔术方法，做api调用转发
      * @param string $name 调用的方法名称
@@ -86,5 +147,27 @@ abstract class ThirdParty extends MagicObject {
     public static function __callStatic($method, $parameters) {
         return call_user_func_array([
             new static, $method], $parameters);
+    }
+
+    /**
+     * 获取缓存或设置缓存
+     * @param $key
+     * @param callable $cb
+     * @return mixed
+     * @throws \Exception
+     */
+    public static function getOrSetCache($key, callable $cb) {
+        if (!function_exists('cache')) {
+            return call_user_func($cb, function ($data, $duration) {
+                return $data;
+            });
+        }
+        if (cache()->has($key)) {
+            return cache()->get($key);
+        }
+        return call_user_func($cb, function ($data, $duration) use ($key) {
+            cache()->set($key, $data, $duration);
+            return $data;
+        });
     }
 }

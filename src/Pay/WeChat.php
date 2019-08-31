@@ -14,7 +14,6 @@ use Zodream\Disk\File;
 use Zodream\Helpers\Str;
 use Zodream\Helpers\Xml;
 use Zodream\Http\Uri;
-use Zodream\Service\Factory;
 use Exception;
 
 class WeChat extends BasePay {
@@ -691,7 +690,7 @@ class WeChat extends BasePay {
      * @throws Exception
      */
     public function callback() {
-        $xml = app('request')->input();
+        $xml = file_get_contents('php://input');
         if (empty($xml)) {
             throw new Exception(
                 __('xml error')
@@ -703,8 +702,7 @@ class WeChat extends BasePay {
         $disableLibxmlEntityLoader = libxml_disable_entity_loader(true);
         $args = Xml::specialDecode($xml);
         libxml_disable_entity_loader($disableLibxmlEntityLoader);
-        Factory::log()
-            ->info('WECHAT PAY CALLBACK: '.app('request')->input());
+        Http::log('WECHAT PAY CALLBACK: '.$xml);
         if (!is_array($args)) {
             throw new Exception(
                 __('xml error')

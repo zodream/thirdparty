@@ -7,7 +7,6 @@ namespace Zodream\ThirdParty\API;
  * Date: 2016/6/2
  * Time: 12:55
  */
-use Zodream\Helpers\Json;
 use Zodream\ThirdParty\ThirdParty;
 
 class Microsoft extends ThirdParty  {

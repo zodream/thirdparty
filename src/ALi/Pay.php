@@ -3,7 +3,6 @@ namespace Zodream\ThirdParty\ALi;
 
 
 use Zodream\Http\Http;
-use Zodream\Service\Factory;
 use Exception;
 
 class Pay extends BaseALi {
@@ -181,8 +180,7 @@ class Pay extends BaseALi {
      */
     public function responseNotify() {
         $data = $_POST;//Requests::isPost() ? $_POST : $_GET;
-        Factory::log()
-            ->info('ALIPAY NOTIFY: '.var_export($data, true));
+        Http::log('ALIPAY NOTIFY: '.var_export($data, true));
         if (!$this->verify($data)) {
             throw new Exception(
                 __('notify verify error')
@@ -193,8 +191,7 @@ class Pay extends BaseALi {
 
     public function responseReturn() {
         $data = $_GET;//Requests::isPost() ? $_POST : $_GET;
-        Factory::log()
-            ->info('ALIPAY RETURN: '.var_export($data, true));
+        Http::log('ALIPAY RETURN: '.var_export($data, true));
         if (!$this->verify($data)) {
             throw new Exception(
                 __('return verify error')

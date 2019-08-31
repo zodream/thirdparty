@@ -11,7 +11,6 @@ use Zodream\Http\Uri;
 use Zodream\ThirdParty\ThirdParty;
 use Zodream\Helpers\Str;
 use Zodream\Service\Factory;
-use Zodream\Infrastructure\Http\Request;
 
 /**
  * Class BaseOAuth
@@ -27,6 +26,8 @@ abstract class BaseOAuth extends ThirdParty  {
 
     protected $codeKey = 'code';
 
+    protected $stateKey = 'state';
+
     public function getBaseHttp($url = null) {
         return $this->getHttp($url)
             ->parameters($this->get());
@@ -37,15 +38,21 @@ abstract class BaseOAuth extends ThirdParty  {
      */
     abstract public function getLogin();
 
-
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     public function callback() {
-        Factory::log()
-            ->info(strtoupper($this->configKey).' CALLBACK: '.var_export($_GET, true));
-        $state = app('request')->get('state');
-        if (empty($state) || $state != Factory::session()->get('state')) {
+        Http::log(strtoupper($this->configKey).' CALLBACK: '.var_export($_GET, true));
+        $state = isset($_GET[$this->stateKey]) ? $_GET[$this->stateKey] : null;
+        if (empty($state)) {
             return false;
         }
-        $code = app('request')->get($this->codeKey);
+        if (function_exists('session')
+            && $state !== session('state')) {
+            return false;
+        }
+        $code = isset($_GET[$this->codeKey]) ? $_GET[$this->codeKey] : null;
         if (empty($code)) {
             return false;
         }
@@ -60,7 +67,11 @@ abstract class BaseOAuth extends ThirdParty  {
      */
     public function login() {
         $state = Str::randomNumber(7);
-        Factory::session()->set('state', $state);
+        if (function_exists('session')) {
+            session([
+                'state' => $state
+            ]);
+        }
         $this->set('state', $state);
         return $this->getLogin()->getUrl();
     }

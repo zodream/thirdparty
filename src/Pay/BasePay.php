@@ -7,7 +7,6 @@ namespace Zodream\ThirdParty\Pay;
  * Date: 2016/8/17
  * Time: 15:22
  */
-use Zodream\Http\Http;
 use Zodream\ThirdParty\ThirdParty;
 use Zodream\Disk\File;
 

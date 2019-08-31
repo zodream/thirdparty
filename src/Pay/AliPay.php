@@ -7,10 +7,8 @@ namespace Zodream\ThirdParty\Pay;
  * Date: 2016/8/17
  * Time: 15:21
  */
-use Zodream\Disk\FileException;
 use Zodream\Http\Http;
 use Zodream\Http\Uri;
-use Zodream\Service\Factory;
 use Exception;
 
 class AliPay extends BasePay {
@@ -491,8 +489,7 @@ class AliPay extends BasePay {
      * @throws \Exception
      */
     public function callback() {
-        Factory::log()
-            ->info('ALIPAY CALLBACK: '.var_export($_POST, true));
+        Http::log('ALIPAY CALLBACK: '.var_export($_POST, true));
         $data = $_POST;//Requests::isPost() ? $_POST : $_GET;
         if (!$this->verify($data)) {
             throw new \Exception('验签失败！');
