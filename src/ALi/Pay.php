@@ -211,5 +211,15 @@ class Pay extends BaseALi {
         return $this->getQuery()->text();
     }
 
+    /**
+     * 退款
+     * @param array $data
+     * @return mixed|null
+     * @throws Exception
+     */
+    public function refund(array $data) {
+        return $this->getRefund()->parameters($this->merge($data))->text();
+    }
+
 
 }
