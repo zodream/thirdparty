@@ -64,7 +64,7 @@ trait Attributes {
                 if (method_exists($this, 'preProcessKey')) {
                     $k = $this->preProcessKey($k);
                 }
-                $this->__attributes[$k] = $value;
+                $this->__attributes[$k] = $val;
             }
             return $this;
         }
