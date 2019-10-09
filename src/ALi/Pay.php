@@ -215,7 +215,11 @@ class Pay extends BaseALi {
      * @throws Exception
      */
     public function refund(array $data) {
-        return $this->getRefund()->parameters($this->merge($data))->text();
+        $args = $this->getRefund()->parameters($this->merge($data))->text();
+        if ($args['code'] != 10000) {
+            throw new \ErrorException(isset($args['sub_msg']) ? $args['sub_msg'] : $args['msg']);
+        }
+         return $args;
     }
 
 

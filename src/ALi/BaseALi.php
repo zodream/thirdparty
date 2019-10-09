@@ -74,7 +74,7 @@ abstract class BaseALi extends ThirdParty {
      * @return Http
      */
     public function getBaseHttp() {
-        return $this->getHttp('https://openapi.alipay.com/gateway.do')
+        return $this->getHttp('https://openapi.alipay.com/gateway.do?charset=utf-8')
             ->maps([
                 '#app_id',
                 'method' => '',
@@ -232,7 +232,7 @@ abstract class BaseALi extends ThirdParty {
                 __('verify response error!')
             );
         }
-        $args = iconv('gb2312', 'utf8//IGNORE', $data);
+        $args = iconv('gb2312', 'utf-8//IGNORE', $data);
         Http::log($args);
         $args = Json::decode($args);
         if (empty($args)) {
