@@ -121,6 +121,41 @@ class ChinaPay extends BasePay {
             ])->encode([$this, 'encodeSign']);
     }
 
+    public function getRefund() {
+        return $this->getBaseHttp('https://gateway.95516.com/gateway/api/backTransReq.do')
+            ->maps([
+                'version' => '5.1.0',		      //版本号
+                'encoding' => 'UTF-8',		      //编码方式
+                'bizType' => '000000',		      //业务类型
+
+                'txnTime' => date('YmdHis'),
+                '#backUrl',
+                '#txnAmt',
+                'txnType' => 31,
+                'txnSubType' => '00',
+                'accessType' => 0,
+                'signature',
+                'signMethod' => '01',
+                '#channelType',
+                '#merId',
+                '#orderId',
+                '#origQryId',
+
+                'subMerId',
+                'subMerAbbr',
+                'subMerName',
+                'certId',
+                'reserved',
+                'reqReserved',
+                'termId'
+            ])->encode([$this, 'encodeSign'])
+            ->decode(function ($data) {
+                $res = [];
+                parse_str($data, $res);
+                return $res;
+            });
+    }
+
     /**
      * 签名
      * @param array|string $content
