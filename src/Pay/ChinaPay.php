@@ -130,8 +130,8 @@ class ChinaPay extends BasePay {
 
                 'txnTime' => date('YmdHis'),
                 '#backUrl',
-                '#txnAmt',
-                'txnType' => 31,
+                '#txnAmt',   // 以分为单位
+                'txnType' => '04',
                 'txnSubType' => '00',
                 'accessType' => 0,
                 'signature',
@@ -303,6 +303,24 @@ class ChinaPay extends BasePay {
             throw new Exception('数据验签失败！');
         }
         if ($args['respCode'] != '01') {
+            return $args;
+        }
+        if ($args["respCode"] == "03"
+            || $args["respCode"] == "04"
+            || $args["respCode"] == "05") {
+            throw new Exception('处理超时，请稍后查询');
+        }
+        throw new Exception($args['respMsg']);
+    }
+
+    public function refund(array $args = array()) {
+        $args = $this->getRefund()
+            ->parameters($this->merge($args))->text();
+        // 签名和验签方法不一样，要改
+        if (!$this->verify($args)) {
+            throw new Exception('数据验签失败！');
+        }
+        if ($args['respCode'] != '00') {
             return $args;
         }
         if ($args["respCode"] == "03"
