@@ -21,8 +21,11 @@ use Zodream\Service\Factory;
  * @property string $sex
  * @property string $avatar
  * @property string $email
+ * @property string $unionid // 可选联合id
  */
 abstract class BaseOAuth extends ThirdParty  {
+
+    const SESSION_STATE_KEY = 'state';
 
     protected $codeKey = 'code';
 
@@ -49,7 +52,7 @@ abstract class BaseOAuth extends ThirdParty  {
             return false;
         }
         if (function_exists('session')
-            && $state !== session('state')) {
+            && $state !== session(self::SESSION_STATE_KEY)) {
             return false;
         }
         $code = isset($_GET[$this->codeKey]) ? $_GET[$this->codeKey] : null;
@@ -69,10 +72,10 @@ abstract class BaseOAuth extends ThirdParty  {
         $state = Str::randomNumber(7);
         if (function_exists('session')) {
             session([
-                'state' => $state
+                self::SESSION_STATE_KEY => $state
             ]);
         }
-        $this->set('state', $state);
+        $this->set($this->stateKey, $state);
         return $this->getLogin()->getUrl();
     }
 
