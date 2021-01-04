@@ -25,7 +25,7 @@ abstract class ThirdParty {
     public function __construct($config = array()) {
         if (empty($config)) {
             if (function_exists('config')) {
-                $this->set(config($this->configKey));
+                $this->set(config('thirdparty.'.$this->configKey));
             }
             return;
         }
