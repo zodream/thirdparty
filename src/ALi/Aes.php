@@ -25,7 +25,7 @@ class Aes extends BaseSecurity {
      * @param string $data
      * @return string
      */
-    public function encrypt($data) {
+    public function encrypt($data): string {
         $data = trim($data);
         $str = $this->pkcs7Pad($data, $this->blockSize);
         $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128,MCRYPT_MODE_CBC),1);
@@ -38,7 +38,7 @@ class Aes extends BaseSecurity {
      * @param string $data
      * @return string
      */
-    public function decrypt($data) {
+    public function decrypt(string $data): string {
         //使用BASE64对需要解密的字符串进行解码
         $str = base64_decode($data);
         $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128,MCRYPT_MODE_CBC),1);

@@ -25,7 +25,7 @@ class Rsa extends BaseRsa {
      * @param $data 要加密的数据
      * @return string 加密后的密文
      */
-    public function encrypt($data){
+    public function encrypt($data): string {
         $maxlength = $this->getMaxEncryptBlockSize($this->publicKey);
         $output='';
         while(strlen($data)){
