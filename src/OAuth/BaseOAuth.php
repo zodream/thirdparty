@@ -27,9 +27,9 @@ abstract class BaseOAuth extends ThirdParty  {
 
     const SESSION_STATE_KEY = 'state';
 
-    protected $codeKey = 'code';
+    protected string $codeKey = 'code';
 
-    protected $stateKey = 'state';
+    protected string $stateKey = 'state';
 
     public function getBaseHttp($url = null) {
         return $this->getHttp($url)

@@ -17,7 +17,7 @@ class WeiBo extends BaseOAuth {
     ]
      * @var string
      */
-    protected $configKey = 'weibo';
+    protected string $configKey = 'weibo';
 
     public function getLogin() {
         return $this->getBaseHttp()

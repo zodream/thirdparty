@@ -20,7 +20,7 @@ abstract class ThirdParty {
      * KEY IN CONFIG
      * @var string
      */
-    protected $configKey;
+    protected string $configKey = '';
 
     public function __construct($config = array()) {
         if (empty($config)) {
@@ -55,12 +55,12 @@ abstract class ThirdParty {
     }
 
     /**
-     * @param $name
+     * @param string $name
      * @param array ...$args
      * @return mixed|null
      * @throws \Exception
      */
-    public function invoke($name, ...$args) {
+    public function invoke(string $name, ...$args) {
         if (method_exists($this, $name)) {
             return $this->{$name}(...$args);
         }
@@ -80,28 +80,28 @@ abstract class ThirdParty {
      * _call
      * 魔术方法，做api调用转发
      * @param string $name 调用的方法名称
-     * @param $args
+     * @param array $args
      * @return array          返加调用结果数组
      * @throws \Exception
      * @since 5.0
      */
-    public function __call($name, $args) {
+    public function __call(string $name, array $args) {
         return $this->invoke($name, ...$args);
     }
 
-    public static function __callStatic($method, $parameters) {
+    public static function __callStatic(string $method, array $parameters) {
         return call_user_func_array([
             new static, $method], $parameters);
     }
 
     /**
      * 获取缓存或设置缓存
-     * @param $key
+     * @param string $key
      * @param callable $cb
      * @return mixed
      * @throws \Exception
      */
-    public static function getOrSetCache($key, callable $cb) {
+    public static function getOrSetCache(string $key, callable $cb) {
         if (!function_exists('cache')) {
             return call_user_func($cb, function ($data, $duration) {
                 return $data;

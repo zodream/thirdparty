@@ -19,9 +19,9 @@ use Zodream\ThirdParty\ThirdParty;
  */
 class IHuYi extends ThirdParty  {
 
-    protected $configKey = 'sms';
+    protected string $configKey = 'sms';
 
-    protected $_data = array(
+    protected $__attributes = array(
         'template' => '您的验证码是：{code}。请不要把验证码泄露给其他人。'
     );
 
@@ -45,7 +45,7 @@ class IHuYi extends ThirdParty  {
      * @return bool
      * @throws \Exception
      */
-    public function send($mobile, $content) {
+    public function send(string|int $mobile, string|int $content) {
         $data = $this->getSend()->parameters([
             'mobile' => $mobile,
             'content' => $content,
@@ -64,7 +64,7 @@ class IHuYi extends ThirdParty  {
      * @return bool|integer false|短信ID
      * @throws \Exception
      */
-    public function sendCode($mobile, $code) {
+    public function sendCode(string|int $mobile, string|int $code) {
         return $this->send($mobile, str_replace('{code}', $code, $this->get('template')));
     }
 

@@ -8,11 +8,11 @@ use Zodream\ThirdParty\ThirdParty;
 
 class TaoBaoKe extends ThirdParty {
 
-    protected $configKey = 'taobaoke';
+    protected string $configKey = 'taobaoke';
 
-    protected $signKey = 'sign';
+    protected string $signKey = 'sign';
 
-    protected $ignoreKeys = [
+    protected array $ignoreKeys = [
         'sign',
         'sign_method'
     ];

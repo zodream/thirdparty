@@ -8,7 +8,7 @@ namespace Zodream\ThirdParty\OAuth;
  */
 class GitHub extends BaseOAuth {
 
-    protected $configKey = 'github';
+    protected string $configKey = 'github';
 
     public function getLogin() {
         return $this->getBaseHttp()

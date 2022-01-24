@@ -11,20 +11,20 @@ class PayPal extends BaseOAuth {
     const LIVE = 'live';
     const SANDBOX = 'sandbox';
 
-    protected $configKey = 'paypal';
+    protected string $configKey = 'paypal';
 
-    protected $baseUrl = [
+    protected array $baseUrl = [
         self::LIVE => 'https://www.paypal.com/',
         self::SANDBOX => 'https://www.sandbox.paypal.com/'
     ];
 
-    public function getBaseHttp($path, $maps = []) {
-        return parent::getBaseHttp()
+    public function baseUriHttp($path, $maps = []) {
+        return $this->getBaseHttp()
             ->url($this->baseUrl[$this->mode].$path, $maps);
     }
 
     public function getLogin() {
-        return $this->getBaseHttp('signin/authorize', [
+        return $this->baseUriHttp('signin/authorize', [
             '#client_id',
             'response_type' => 'code',
             'scope' => 'openid profile address email phone https://uri.paypal.com/services/paypalattributes https://uri.paypal.com/services/expresscheckout',
@@ -52,7 +52,7 @@ class PayPal extends BaseOAuth {
     }
 
     public function getRefresh() {
-        return $this->getBaseHttp('webapps/auth/protocol/openidconnect/v1/identity/tokenservice',
+        return $this->baseUriHttp('webapps/auth/protocol/openidconnect/v1/identity/tokenservice',
             [
                 'grant_type' => 'refresh_token',
                 '#refresh_token',
@@ -61,7 +61,7 @@ class PayPal extends BaseOAuth {
     }
 
     public function getInfo() {
-        return $this->getBaseHttp('webapps/auth/protocol/openidconnect/v1/identity/openidconnect/userinfo',
+        return $this->baseUriHttp('webapps/auth/protocol/openidconnect/v1/identity/openidconnect/userinfo',
             [
                 'schema' => 'openid',
                 '#access_token'
@@ -73,9 +73,9 @@ class PayPal extends BaseOAuth {
 
     /**
      *
-     * @var bool
+     * @var string
      */
-    protected $mode = self::SANDBOX;
+    protected string $mode = self::SANDBOX;
 
     public function __construct(array $config = array()) {
         parent::__construct($config);
@@ -92,8 +92,8 @@ class PayPal extends BaseOAuth {
      * @param string $arg
      * @return $this
      */
-    public function setMode($arg) {
-        $this->mode = strtolower($arg) == self::LIVE ? self::LIVE : self::SANDBOX;
+    public function setMode(string $arg) {
+        $this->mode = strtolower($arg) === self::LIVE ? self::LIVE : self::SANDBOX;
         return $this;
     }
 

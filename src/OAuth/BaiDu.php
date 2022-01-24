@@ -7,7 +7,7 @@ namespace Zodream\ThirdParty\OAuth;
  * Time: 17:44
  */
 class BaiDu extends BaseOAuth {
-    protected $configKey= 'baidu';
+    protected string $configKey= 'baidu';
 
     public function getLogin() {
         return $this->getBaseHttp()

@@ -3,7 +3,6 @@ namespace Zodream\ThirdParty\OAuth;
 
 use Zodream\Helpers\Str;
 use Zodream\Http\Http;
-use Zodream\Service\Factory;
 
 /**
  * Created by PhpStorm.
@@ -22,7 +21,7 @@ class WeChat extends BaseOAuth {
     ]
      * @var string
      */
-    protected $configKey = 'wechat';
+    protected string $configKey = 'wechat';
 
     public function getLogin() {
         return $this->getBaseHttp()

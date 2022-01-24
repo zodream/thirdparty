@@ -23,7 +23,7 @@ class QQ extends BaseOAuth {
     ]
      * @var string
      */
-    protected $configKey = 'qq';
+    protected string $configKey = 'qq';
 
     public function getLogin() {
         return $this->getBaseHttp()
@@ -85,8 +85,8 @@ class QQ extends BaseOAuth {
      * @param $data
      * @return mixed
      */
-    protected function decodeJson($data) {
-        if (strpos($data, 'callback') !== false) {
+    protected function decodeJson(string $data) {
+        if (str_contains($data, 'callback')) {
             $leftPos = strpos($data, '(');
             $rightPos = strrpos($data, ')');
             $data = substr($data, $leftPos + 1, $rightPos - $leftPos -1);
@@ -96,10 +96,10 @@ class QQ extends BaseOAuth {
 
     /**
      * 解密 string
-     * @param $data
+     * @param string $data
      * @return array
      */
-    protected function decodeString($data) {
+    protected function decodeString(string $data) {
         $args = [];
         parse_str($data, $args);
         return $args;

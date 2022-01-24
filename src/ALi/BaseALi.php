@@ -28,11 +28,11 @@ abstract class BaseALi extends ThirdParty {
 
     const AES = 'AES';
 
-    protected $configKey = 'alipay';
+    protected string $configKey = 'alipay';
 
-    protected $signKey = 'sign';
+    protected string $signKey = 'sign';
 
-    protected $ignoreKeys = [
+    protected array $ignoreKeys = [
         'sign',
         'sign_type'
     ];

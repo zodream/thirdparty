@@ -11,7 +11,7 @@ use Zodream\Http\Http;
 
 class WeiMoB extends BaseOAuth {
 
-    protected $configKey = 'weimob';
+    protected string $configKey = 'weimob';
 
     public function getLogin() {
         return $this->getBaseHttp()

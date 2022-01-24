@@ -9,7 +9,7 @@ trait EventTrait {
     /**
      * @var callable[]
      */
-    protected $events = [];
+    protected array $events = [];
 
     /**
      * 监听事件允许多个

@@ -14,9 +14,9 @@ use Zodream\Http\Http;
  */
 class ChinaPay extends BasePay {
 
-    protected $configKey = 'chinapay';
+    protected string $configKey = 'chinapay';
 
-    protected $signKey = 'Signature';
+    protected string $signKey = 'Signature';
 
     protected $privateKey = [];
 
@@ -40,7 +40,7 @@ class ChinaPay extends BasePay {
      */
     protected $privatePFXCertId;
 
-    protected $ignoreKeys = [
+    protected array $ignoreKeys = [
         'Signature',
         'CertId'
     ];

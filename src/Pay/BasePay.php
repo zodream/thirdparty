@@ -20,13 +20,13 @@ abstract class BasePay extends ThirdParty  {
 
     protected $key;
 
-    protected $signKey = 'sign';
+    protected string $signKey = 'sign';
 
     /**
      * 不参加签名字段
      * @var array
      */
-    protected $ignoreKeys = [];
+    protected array $ignoreKeys = [];
 
     /**
      * @var File

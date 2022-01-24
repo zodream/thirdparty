@@ -11,9 +11,9 @@ use Zodream\ThirdParty\ALi\OAuth;
  */
 class ALiPay extends BaseOAuth {
 
-    protected $configKey = 'alipay';
+    protected string $configKey = 'alipay';
 
-    protected $codeKey = 'auth_code';
+    protected string $codeKey = 'auth_code';
 
     public function getLogin() {
         return $this->getBaseHttp()

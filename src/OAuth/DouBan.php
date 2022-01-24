@@ -8,7 +8,7 @@ namespace Zodream\ThirdParty\OAuth;
  */
 class DouBan extends BaseOAuth {
 
-    protected $configKey = 'douban';
+    protected string $configKey = 'douban';
 
     public function getLogin() {
         return $this->getBaseHttp()

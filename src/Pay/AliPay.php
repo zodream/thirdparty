@@ -24,9 +24,9 @@ class AliPay extends BasePay {
     )
      * @var string
      */
-    protected $configKey = 'alipay';
+    protected string $configKey = 'alipay';
 
-    protected $ignoreKeys = [
+    protected array $ignoreKeys = [
         'sign',
         'sign_type'
     ];

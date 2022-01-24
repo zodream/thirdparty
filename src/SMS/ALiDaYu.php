@@ -128,7 +128,6 @@ class ALiDaYu extends ThirdParty {
             throw new \Exception('SECRET ERROR!');
         }
         ksort($data);
-        reset($data);
         $arg = '';
         foreach ($data as $key => $item) {
             if (Http::isEmpty($item) || $key == 'sign') {

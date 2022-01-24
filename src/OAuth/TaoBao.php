@@ -8,7 +8,7 @@ namespace Zodream\ThirdParty\OAuth;
  */
 class TaoBao extends BaseOAuth {
 
-    protected $configKey = 'taobao';
+    protected string $configKey = 'taobao';
 
     public function getLogin() {
         return $this->getBaseHttp()

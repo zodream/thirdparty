@@ -8,7 +8,7 @@ namespace Zodream\ThirdParty\OAuth;
  */
 class Mi extends BaseOAuth {
 
-    protected $configKey = 'mi';
+    protected string $configKey = 'mi';
 
     public function getLogin() {
         return $this->getBaseHttp()
@@ -63,7 +63,7 @@ class Mi extends BaseOAuth {
 
     /**
      * 获取用户信息
-     * @return array
+     * @return array|bool
      * @throws \Exception
      */
     public function info() {

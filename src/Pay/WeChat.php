@@ -29,9 +29,9 @@ class WeChat extends BasePay {
         )
      * @var string
      */
-    protected $configKey = 'wechat';
+    protected string $configKey = 'wechat';
 
-    protected $ignoreKeys = ['sign'];
+    protected array $ignoreKeys = ['sign'];
 
     /**
      * 生成完整的网址
@@ -39,7 +39,7 @@ class WeChat extends BasePay {
      * @return string
      */
     public function getUrl($path) {
-        if (strpos($path, '://') !== false) {
+        if (str_contains($path, '://')) {
             return $path;
         }
         $url = 'https://api.mch.weixin.qq.com/';
@@ -654,7 +654,6 @@ class WeChat extends BasePay {
             throw new Exception('KEY IS NEED');
         }
         ksort($args);
-        reset($args);
         $arg = '';
         foreach ($args as $key => $item) {
             if (Http::isEmpty($item) ||
