@@ -14,10 +14,10 @@
     ],
     "require": {
         "php": ">=8.1",
-        "zodream/helpers": "^5.0",
-        "zodream/http": "^5.0",
-        "zodream/disk": "^5.0",
-        "zodream/image" : "^5.0"
+        "zodream/helpers": "dev-master",
+        "zodream/http": "dev-master",
+        "zodream/disk": "dev-master",
+        "zodream/image" : "dev-master"
     },
     "autoload": {
         "psr-4": {
