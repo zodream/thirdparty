@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\SMS;
 
 use Zodream\Http\Http;
@@ -12,7 +13,7 @@ use Zodream\ThirdParty\ThirdParty;
  * 阿里大于短信
  * @package Zodream\ThirdParty\SMS
  */
-class ALiDaYu extends ThirdParty {
+class ALiDaYu extends ThirdParty implements IShortMessageProtocol {
 
 
     public function getBaseHttp() {
@@ -94,6 +95,10 @@ class ALiDaYu extends ThirdParty {
             ]);
     }
 
+    public function isOnlyTemplate(): bool {
+        return true;
+    }
+
 
     /**
      * @param $mobile
@@ -103,12 +108,13 @@ class ALiDaYu extends ThirdParty {
      * @return bool
      * @throws \Exception
      */
-    public function send($mobile, $templateId, $data, $signName = '阿里大于') {
+    public function send(string $mobile, string $templateId, array $data,
+                         string $signName = '阿里大于'): bool|string {
         $args = $this->getSend()->parameters([
             'sms_template_code' => $templateId,
             'sms_free_sign_name' => $signName,
             'rec_num' => $mobile,
-            'sms_param' => is_array($data) ? json_encode($data) : $data,
+            'sms_param' => json_encode($data),
             'timestamp' => date('Y-m-d H:i:s')
         ])->json();
         if (array_key_exists('error_response', $args)) {

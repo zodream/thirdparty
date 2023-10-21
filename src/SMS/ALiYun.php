@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\SMS;
 
 use Zodream\ThirdParty\ThirdParty;
@@ -11,7 +12,7 @@ use Zodream\ThirdParty\ThirdParty;
  * 阿里云短信
  * @package Zodream\ThirdParty\SMS
  */
-class ALiYun extends ThirdParty {
+class ALiYun extends ThirdParty implements IShortMessageProtocol {
 
     public function getBaseHttp() {
         return $this->getHttp('http://dysmsapi.aliyuncs.com')
@@ -42,6 +43,10 @@ class ALiYun extends ThirdParty {
             ]);
     }
 
+    public function isOnlyTemplate(): bool {
+        return true;
+    }
+
     /**
      * @param $mobile
      * @param $templateId
@@ -50,7 +55,8 @@ class ALiYun extends ThirdParty {
      * @return mixed
      * @throws \Exception
      */
-    public function send($mobile, $templateId, $data, $signName = '阿里云') {
+    public function send(string $mobile, string $templateId, array $data,
+                         string $signName = '阿里云'): bool|string {
         $args = $this->getSend()->parameters([
             'TemplateCode' => $templateId,
             'SignName' => $signName,
@@ -59,10 +65,10 @@ class ALiYun extends ThirdParty {
                 json_encode($data, JSON_FORCE_OBJECT) : $data,
             'Timestamp' => $this->getTimestamp()
         ])->json();
-        if ($args['Code'] != 'OK') {
+        if ($args['Code'] !== 'OK') {
             throw new \Exception($args['Message']);
         }
-        return $args;
+        return true;//$args['Code'] === 'OK';
     }
 
     /**
@@ -78,7 +84,7 @@ class ALiYun extends ThirdParty {
         ksort($params);
         $stringToSign = 'GET&%2F&'.
             urlencode(http_build_query(
-            $params, null,
+            $params, '',
                     '&', PHP_QUERY_RFC3986));
         return base64_encode(hash_hmac('sha1',
             $stringToSign, $secret.'&', true));
