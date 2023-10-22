@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\Traits;
 
 defined('DEFAULT_EVENT') || define('DEFAULT_EVENT', '__default__');
@@ -17,7 +18,7 @@ trait EventTrait {
      * @param callable $callback
      * @return $this
      */
-    public function on($events, callable $callback) {
+    public function on(array|string $events, callable $callback): static {
         foreach ((array)$events as $event) {
             if (!array_key_exists($event, $this->events)) {
                 $this->events[$event] = [];
@@ -28,11 +29,11 @@ trait EventTrait {
     }
 
     /**
-     * @param null $event
-     * @param array $args
+     * @param string|null $event
+     * @param array|null $args
      * @return $this
      */
-    public function invoke($event = null, array $args = null) {
+    public function invoke(?string $event = null, array $args = null): static {
         if (empty($event)) {
             $event = $this->getEvent();
         }
@@ -53,7 +54,7 @@ trait EventTrait {
      * @param array|null $args
      * @return $this
      */
-    public function invokeDefault(array $args = null) {
+    public function invokeDefault(array $args = null): static {
         if (!array_key_exists(DEFAULT_EVENT, $this->events)) {
             return $this;
         }

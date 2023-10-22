@@ -1,21 +1,22 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\Traits;
 
 
 trait Attributes {
 
-    protected $__attributes = [];
+    protected mixed $__attributes = [];
 
     /**
      * 合并数组并返回新数组
      * @param array $data
      * @return array
      */
-    public function merge(array $data) {
+    public function merge(array $data): array {
         return array_merge($this->__attributes, $data);
     }
 
-    public function get($key = null, $default = null) {
+    public function get(mixed $key = null, mixed $default = null): mixed {
         if (empty($key)) {
             return $this->__attributes;
         }
@@ -36,7 +37,7 @@ trait Attributes {
      * @param string|null $key 如果为null 则判断是否有数据
      * @return bool
      */
-    public function has($key = null) {
+    public function has(mixed $key = null): bool {
         if (is_null($key)) {
             return !empty($this->__attributes);
         }
@@ -55,7 +56,7 @@ trait Attributes {
      * @param string $value
      * @return $this
      */
-    public function set($key, $value = null) {
+    public function set(mixed $key, mixed $value = null): static {
         if (is_object($key)) {
             $key = (array)$key;
         }
@@ -86,11 +87,11 @@ trait Attributes {
         return $this->get($attribute);
     }
 
-    public function offsetSet($offset, $value) {
+    public function offsetSet($offset, $value): void {
         $this->set($offset, $value);
     }
 
-    public function __set($attribute, $value) {
+    public function __set($attribute, $value): void {
         $this->set($attribute, $value);
     }
 }

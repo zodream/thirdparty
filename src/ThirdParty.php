@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty;
 /**
  * 第三方接口
@@ -22,7 +23,7 @@ abstract class ThirdParty {
      */
     protected string $configKey = '';
 
-    public function __construct($config = array()) {
+    public function __construct(array $config = array()) {
         if (empty($config)) {
             if (function_exists('config')) {
                 $this->set(config('thirdparty.'.$this->configKey));
@@ -41,16 +42,16 @@ abstract class ThirdParty {
      * GET NAME
      * @return string
      */
-    public function getName() {
+    public function getName(): string {
         return $this->configKey;
     }
 
     /**
      * 生成新的请求
-     * @param Uri|string $url
+     * @param Uri|string|null $url
      * @return Http
      */
-    public function getHttp($url = null) {
+    public function getHttp(Uri|string|null $url = null): Http {
         return new Http($url);
     }
 
@@ -60,7 +61,7 @@ abstract class ThirdParty {
      * @return mixed|null
      * @throws \Exception
      */
-    public function invoke(string $name, ...$args) {
+    public function invoke(string $name, ...$args): mixed {
         if (method_exists($this, $name)) {
             return $this->{$name}(...$args);
         }
@@ -101,7 +102,7 @@ abstract class ThirdParty {
      * @return mixed
      * @throws \Exception
      */
-    public static function getOrSetCache(string $key, callable $cb) {
+    public static function getOrSetCache(string $key, callable $cb): mixed {
         if (!function_exists('cache')) {
             return call_user_func($cb, function ($data, $duration) {
                 return $data;
