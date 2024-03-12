@@ -26,7 +26,7 @@ class Microsoft extends ThirdParty  {
 
     public function getWallpager() {
         return $this->getHttp()
-            ->url('https://cn.bing.com/HPImageArchive.aspx?format=js', [
+            ->url('https://bing.com/HPImageArchive.aspx?format=js', [
                 'idx' => 0,
                 'n' => 1,
                 'mkt' =>'zh-CN'
@@ -79,7 +79,7 @@ class Microsoft extends ThirdParty  {
         if (empty($data) || empty($data['images'])) {
             return [];
         }
-        $baseHost = 'https://cn.bing.com';
+        $baseHost = 'https://bing.com';
         return array_map(function ($item) use ($baseHost) {
             return [
                 'url' => $baseHost. $item['url'],
