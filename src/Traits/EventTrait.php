@@ -33,7 +33,7 @@ trait EventTrait {
      * @param array|null $args
      * @return $this
      */
-    public function invoke(?string $event = null, array $args = null): static {
+    public function invoke(string|null $event = null, array $args = null): static {
         if (empty($event)) {
             $event = $this->getEvent();
         }
