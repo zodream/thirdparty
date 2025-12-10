@@ -13,11 +13,11 @@
         }
     ],
     "require": {
-        "php": ">=8.2",
-        "zodream/helpers": "^5.3",
-        "zodream/http": "^5.3",
-        "zodream/disk": "^5.3",
-        "zodream/image" : "^5.3"
+        "php": ">=8.5",
+        "zodream/helpers": "dev-master",
+        "zodream/http": "dev-master",
+        "zodream/disk": "dev-master",
+        "zodream/image" : "dev-master"
     },
     "autoload": {
         "psr-4": {
