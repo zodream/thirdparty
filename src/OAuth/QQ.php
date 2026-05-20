@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
 
 
@@ -25,7 +26,7 @@ class QQ extends BaseOAuth {
      */
     protected string $configKey = 'qq';
 
-    public function getLogin() {
+    public function getLogin(): Http {
         return $this->getBaseHttp()
             ->url('https://graph.qq.com/oauth2.0/authorize', [
                 'response_type' => 'code',
@@ -38,7 +39,7 @@ class QQ extends BaseOAuth {
             ]);
     }
 
-    public function getAccess() {
+    public function getAccess(): Http {
         return $this->getBaseHttp()
             ->url('https://graph.qq.com/oauth2.0/token', [
                 'grant_type' => 'authorization_code',
@@ -53,7 +54,7 @@ class QQ extends BaseOAuth {
      * 自动续期
      * @return Http
      */
-    public function getRefresh() {
+    public function getRefresh(): Http {
         return $this->getBaseHttp()
             ->url('https://graph.qq.com/oauth2.0/token',
                 [
@@ -64,14 +65,14 @@ class QQ extends BaseOAuth {
                 ])->decode([$this, 'decodeJson']);
     }
 
-    public function getOpenid() {
+    public function getOpenid(): Http {
         return $this->getBaseHttp()
             ->url('https://graph.qq.com/oauth2.0/me', [
                 '#access_token'
             ])->decode([$this, 'decodeJson']);
     }
 
-    public function getInfo() {
+    public function getInfo(): Http {
         return $this->getBaseHttp()
             ->url('https://graph.qq.com/user/get_user_info', [
                     '#oauth_consumer_key:client_id',

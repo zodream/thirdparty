@@ -1,7 +1,8 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
 
-
+use Zodream\Http\Http;
 /**
  * 小米OAUTH
  * @package Zodream\ThirdParty\OAuth
@@ -10,7 +11,7 @@ class Mi extends BaseOAuth {
 
     protected string $configKey = 'mi';
 
-    public function getLogin() {
+    public function getLogin(): Http {
         return $this->getBaseHttp()
             ->url('https://account.xiaomi.com/oauth2/authorize', [
                 'response_type' => 'code',
@@ -22,7 +23,7 @@ class Mi extends BaseOAuth {
             ]);
     }
 
-    public function getAccess() {
+    public function getAccess(): Http {
         return $this->getBaseHttp()
             ->url('https://account.xiaomi.com/oauth2/token', [
                 'grant_type' => 'authorization_code',
@@ -33,7 +34,7 @@ class Mi extends BaseOAuth {
             ]);
     }
 
-    public function getInfo() {
+    public function getInfo(): Http {
         return $this->getBaseHttp()
             ->url('https://open.account.xiaomi.com/user/profile', [
                 '#clientId:client_id',

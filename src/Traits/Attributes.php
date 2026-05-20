@@ -79,19 +79,19 @@ trait Attributes {
         return $this;
     }
 
-    public function offsetGet($offset) {
+    public function offsetGet(mixed $offset) {
         return $this->get($offset);
     }
 
-    public function __get($attribute) {
+    public function __get(mixed $attribute) {
         return $this->get($attribute);
     }
 
-    public function offsetSet($offset, $value): void {
+    public function offsetSet(mixed $offset, mixed $value): void {
         $this->set($offset, $value);
     }
 
-    public function __set($attribute, $value): void {
+    public function __set(mixed $attribute, mixed $value): void {
         $this->set($attribute, $value);
     }
 }

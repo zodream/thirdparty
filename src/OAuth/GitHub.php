@@ -1,5 +1,8 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
+
+use Zodream\Http\Http;
 /**
  * Created by PhpStorm.
  * User: zx648
@@ -10,7 +13,7 @@ class GitHub extends BaseOAuth {
 
     protected string $configKey = 'github';
 
-    public function getLogin() {
+    public function getLogin(): Http {
         return $this->getBaseHttp()
             ->url('https://github.com/login/oauth/authorize', [
                 '#client_id',
@@ -21,7 +24,7 @@ class GitHub extends BaseOAuth {
             ]);
     }
 
-    public function getAccess() {
+    public function getAccess(): Http {
         return $this->getBaseHttp('https://github.com/login/oauth/access_token')
             ->maps([
                 '#client_id',
@@ -34,7 +37,7 @@ class GitHub extends BaseOAuth {
             ]);
     }
 
-    public function getInfo() {
+    public function getInfo(): Http {
         return $this->getBaseHttp()
             ->url('https://api.github.com/user', [
                 '#access_token',

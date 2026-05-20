@@ -1,9 +1,10 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\ALi;
 
 class OAuth extends BaseALi {
 
-    public function getToken() {
+    public function getToken(): Http {
         return $this->getBaseHttp()->appendMaps([
             'method' => 'alipay.system.oauth.token',
             [
@@ -14,7 +15,7 @@ class OAuth extends BaseALi {
         ]);
     }
 
-    public function getInfo() {
+    public function getInfo(): Http {
         return $this->getBaseHttp()->appendMaps([
             'method' => 'alipay.user.info.share',
         ]);
@@ -26,7 +27,7 @@ class OAuth extends BaseALi {
      * @return mixed
      * @throws \Exception
      */
-    public function token($code) {
+    public function token(mixed $code) {
         if (!is_array($code)) {
             $code = [
                 'code' => $code,
@@ -41,7 +42,7 @@ class OAuth extends BaseALi {
      * @return mixed
      * @throws \Exception
      */
-    public function info($token) {
+    public function info(string $token) {
         return $this->getInfo()->parameters([
             'auth_token' => $token
         ])->text();

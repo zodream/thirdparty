@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\API;
 
 /**
@@ -8,10 +9,11 @@ namespace Zodream\ThirdParty\API;
  * Time: 12:55
  */
 use Zodream\ThirdParty\ThirdParty;
+use Zodream\Http\Http;
 
 class Microsoft extends ThirdParty  {
 
-    public function getFaceScore() {
+    public function getFaceScore(): Http {
         return $this->getHttp('http://kan.msxiaobing.com/Api/ImageAnalyze/Process?service=yanzhi')
             ->maps([
                 'MsgId',
@@ -20,11 +22,11 @@ class Microsoft extends ThirdParty  {
             ]);
     }
 
-    public function getUpload() {
+    public function getUpload(): Http {
         return $this->getHttp('http://kan.msxiaobing.com/Api/Image/UploadBase64');
     }
 
-    public function getWallpager() {
+    public function getWallpager(): Http {
         return $this->getHttp()
             ->url('https://bing.com/HPImageArchive.aspx?format=js', [
                 'idx' => 0,

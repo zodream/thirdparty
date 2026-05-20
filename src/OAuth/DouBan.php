@@ -1,5 +1,8 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
+
+use Zodream\Http\Http;
 /**
  * Created by PhpStorm.
  * User: zx648
@@ -10,7 +13,7 @@ class DouBan extends BaseOAuth {
 
     protected string $configKey = 'douban';
 
-    public function getLogin() {
+    public function getLogin(): Http {
         return $this->getBaseHttp()
             ->url('https://www.douban.com/service/auth2/auth',
                 [
@@ -22,7 +25,7 @@ class DouBan extends BaseOAuth {
                 ]);
     }
 
-    public function getAccess() {
+    public function getAccess(): Http {
         return $this->getBaseHttp('https://www.douban.com/service/auth2/token')
             ->maps([
                 '#client_id',
@@ -33,7 +36,7 @@ class DouBan extends BaseOAuth {
             ]);
     }
 
-    public function getRefresh() {
+    public function getRefresh(): Http {
         return $this->getBaseHttp('https://www.douban.com/service/auth2/token')
             ->maps([
                 '#client_id',
@@ -44,7 +47,7 @@ class DouBan extends BaseOAuth {
             ]);
     }
 
-    public function getInfo() {
+    public function getInfo(): Http {
         return $this->getBaseHttp('https://api.douban.com/v2/user/~me');
     }
 

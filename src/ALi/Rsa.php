@@ -1,11 +1,12 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\ALi;
 
 use Zodream\Helpers\Security\Rsa as BaseRsa;
 
 class Rsa extends BaseRsa {
 
-    public function sign($data) {
+    public function sign(string $data): string|false {
         if (empty($this->privateKey)) {
             return false;
         }
@@ -16,7 +17,7 @@ class Rsa extends BaseRsa {
         return base64_encode($encrypted);
     }
 
-    public function verify($data, $sign) {
+    public function verify(string $data, string $sign): bool {
         return (bool)openssl_verify($data, base64_decode($sign), $this->publicKey, $this->padding);
     }
 
@@ -25,7 +26,7 @@ class Rsa extends BaseRsa {
      * @param $data 要加密的数据
      * @return string 加密后的密文
      */
-    public function encrypt($data): string {
+    public function encrypt(string $data): string {
         $maxlength = $this->getMaxEncryptBlockSize($this->publicKey);
         $output='';
         while(strlen($data)){
@@ -43,7 +44,7 @@ class Rsa extends BaseRsa {
      * @param $data 要解密的数据
      * @return string 解密后的明文
      */
-    public function decrypt($data){
+    public function decrypt(string $data): string {
         $data = base64_decode($data);
         $maxlength = $this->getMaxDecryptBlockSize($this->privateKey);
         $output='';
@@ -60,9 +61,9 @@ class Rsa extends BaseRsa {
      *根据key的内容获取最大加密lock的大小，兼容各种长度的rsa keysize（比如1024,2048）
      * 对于1024长度的RSA Key，返回值为117
      * @param $keyRes
-     * @return float
+     * @return int
      */
-    public function getMaxEncryptBlockSize($keyRes){
+    public function getMaxEncryptBlockSize($keyRes): int {
         $keyDetail = openssl_pkey_get_details($keyRes);
         $modulusSize = $keyDetail['bits'];
         return $modulusSize/8 - 11;
@@ -72,9 +73,9 @@ class Rsa extends BaseRsa {
      * 根据key的内容获取最大解密block的大小，兼容各种长度的rsa keysize（比如1024,2048）
      * 对于1024长度的RSA Key，返回值为128
      * @param $keyRes
-     * @return float
+     * @return int
      */
-    public function getMaxDecryptBlockSize($keyRes){
+    public function getMaxDecryptBlockSize($keyRes): int {
         $keyDetail = openssl_pkey_get_details($keyRes);
         $modulusSize = $keyDetail['bits'];
         return $modulusSize / 8;

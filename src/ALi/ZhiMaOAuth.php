@@ -1,12 +1,14 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\ALi;
 
 use Exception;
 use Zodream\Helpers\Json;
+use Zodream\Http\Http;
 
 class ZhiMaOAuth extends BaseZhiMa {
 
-    public function getLogin() {
+    public function getLogin(): Http {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'zhima.auth.info.authorize',
@@ -26,7 +28,7 @@ class ZhiMaOAuth extends BaseZhiMa {
             ]);
     }
 
-    public function getScore() {
+    public function getScore(): Http {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'zhima.credit.score.get',

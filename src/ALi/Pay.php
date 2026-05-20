@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\ALi;
 
 
@@ -11,7 +12,7 @@ class Pay extends BaseALi {
      * PC 网站支付
      * @return Http
      */
-    public function getWebPay() {
+    public function getWebPay(): Http {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'alipay.trade.page.pay',
@@ -41,7 +42,7 @@ class Pay extends BaseALi {
      * H5 支付
      * @return Http
      */
-    public function getWapPay() {
+    public function getWapPay(): Http {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'alipay.trade.wap.pay',
@@ -74,7 +75,7 @@ class Pay extends BaseALi {
      * 手机APP支付
      * @return Http
      */
-    public function getAppPay() {
+    public function getAppPay(): Http {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'alipay.trade.app.pay',
@@ -102,7 +103,7 @@ class Pay extends BaseALi {
      * 当面支付
      * @return Http
      */
-    public function getPay() {
+    public function getPay(): Http {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'alipay.trade.pay',
@@ -131,7 +132,7 @@ class Pay extends BaseALi {
      * 统一收单交易退款接口
      * @return Http
      */
-    public function getRefund() {
+    public function getRefund(): Http {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'alipay.trade.refund',
@@ -160,7 +161,7 @@ class Pay extends BaseALi {
             ]);
     }
 
-    public function getQuery() {
+    public function getQuery(): Http {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'alipay.trade.query',

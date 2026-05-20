@@ -13,7 +13,7 @@ use Zodream\Http\Http;
 use Zodream\Http\Uri;
 use Zodream\ThirdParty\Traits\Attributes;
 
-abstract class ThirdParty {
+abstract class ThirdParty implements IThirdPartyProtocol {
 
     use Attributes;
 
@@ -23,7 +23,7 @@ abstract class ThirdParty {
      */
     protected string $configKey = '';
 
-    public function __construct(array $config = array()) {
+    public function __construct(array $config = []) {
         if (empty($config)) {
             if (function_exists('config')) {
                 $this->set(config('thirdparty.'.$this->configKey));
@@ -61,7 +61,7 @@ abstract class ThirdParty {
      * @return mixed|null
      * @throws \Exception
      */
-    public function invoke(string $name, ...$args): mixed {
+    public function invoke(string $name, mixed ...$args): mixed {
         if (method_exists($this, $name)) {
             return $this->{$name}(...$args);
         }

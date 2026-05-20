@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\ALi;
 
 /**
@@ -11,13 +12,13 @@ use Zodream\Helpers\Security\BaseSecurity;
 
 class Aes extends BaseSecurity {
 
-    protected $key;
+    protected string $key;
 
-    protected $blockSize = 32;
+    protected int $blockSize = 32;
 
-    public function __construct($key) {
+    public function __construct(string $key) {
         $this->key = base64_decode($key);
-        $this->blockSize = mcrypt_get_block_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+        $this->blockSize = \mcrypt_get_block_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
     }
 
     /**
@@ -28,8 +29,8 @@ class Aes extends BaseSecurity {
     public function encrypt($data): string {
         $data = trim($data);
         $str = $this->pkcs7Pad($data, $this->blockSize);
-        $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128,MCRYPT_MODE_CBC),1);
-        $encrypt_str =  mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $this->key, $str, MCRYPT_MODE_CBC);
+        $iv = \mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128,MCRYPT_MODE_CBC),1);
+        $encrypt_str =  \mcrypt_encrypt(MCRYPT_RIJNDAEL_128, $this->key, $str, MCRYPT_MODE_CBC);
         return base64_encode($encrypt_str);
     }
 
@@ -41,8 +42,8 @@ class Aes extends BaseSecurity {
     public function decrypt(string $data): string {
         //使用BASE64对需要解密的字符串进行解码
         $str = base64_decode($data);
-        $iv = mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128,MCRYPT_MODE_CBC),1);
-        $encrypt_str =  mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $this->key, $str, MCRYPT_MODE_CBC);
+        $iv = \mcrypt_create_iv(mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128,MCRYPT_MODE_CBC),1);
+        $encrypt_str =  \mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $this->key, $str, MCRYPT_MODE_CBC);
         $encrypt_str = trim($encrypt_str);
         $encrypt_str = $this->pkcs7UnPad($encrypt_str, $this->blockSize);
         return $encrypt_str;

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
 /**
  * Created by PhpStorm.
@@ -10,7 +11,6 @@ use Zodream\Http\Http;
 use Zodream\Http\Uri;
 use Zodream\ThirdParty\ThirdParty;
 use Zodream\Helpers\Str;
-use Zodream\Service\Factory;
 
 /**
  * Class BaseOAuth
@@ -31,7 +31,7 @@ abstract class BaseOAuth extends ThirdParty  {
 
     protected string $stateKey = 'state';
 
-    public function getBaseHttp($url = null) {
+    public function getBaseHttp(mixed $url = null): Http {
         return $this->getHttp($url)
             ->parameters($this->get());
     }
@@ -39,7 +39,7 @@ abstract class BaseOAuth extends ThirdParty  {
     /**
      * @return Http
      */
-    abstract public function getLogin();
+    abstract public function getLogin(): Http;
 
     /**
      * @return bool

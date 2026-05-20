@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\API;
 /**
  * ALL SEARCH ENGINE API
@@ -7,12 +8,13 @@ namespace Zodream\ThirdParty\API;
  * Time: 12:03
  */
 use Zodream\ThirdParty\ThirdParty;
+use Zodream\Http\Http;
 
 class Search extends ThirdParty {
 
     protected string $configKey = 'search';
 
-    public function getBaiDu() {
+    public function getBaiDu(): Http {
         return $this->getHttp()
             ->url('http://data.zz.baidu.com/urls', [
                 '#site',

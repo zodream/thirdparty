@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\Pay;
 /**
  * URL: https://pay.weixin.qq.com/wiki/doc/api/app/app.php?chapter=9_1

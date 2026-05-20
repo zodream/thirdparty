@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
 
 use Zodream\Helpers\Str;
@@ -23,7 +24,7 @@ class WeChat extends BaseOAuth {
      */
     protected string $configKey = 'wechat';
 
-    public function getLogin() {
+    public function getLogin(): Http {
         return $this->getBaseHttp()
             ->url('https://open.weixin.qq.com/connect/qrconnect', [
                 '#appid',
@@ -34,7 +35,7 @@ class WeChat extends BaseOAuth {
             ]);
     }
 
-    public function getAccess() {
+    public function getAccess(): Http {
         return $this->getBaseHttp()
             ->url('https://api.weixin.qq.com/sns/oauth2/access_token', [
                 '#appid',
@@ -44,7 +45,7 @@ class WeChat extends BaseOAuth {
             ]);
     }
 
-    public function getRefresh() {
+    public function getRefresh(): Http {
         return $this->getBaseHttp()
             ->url('https://api.weixin.qq.com/sns/oauth2/refresh_token', [
                 '#appid',
@@ -53,7 +54,7 @@ class WeChat extends BaseOAuth {
             ]);
     }
 
-    public function getInfo() {
+    public function getInfo(): Http {
         return $this->getBaseHttp()
             ->url('https://api.weixin.qq.com/sns/userinfo', [
                 '#access_token',

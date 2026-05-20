@@ -1,10 +1,10 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\ALi;
 
 use Zodream\Helpers\Arr;
 use Zodream\Helpers\Json;
 use Zodream\Http\Http;
-use Zodream\Service\Factory;
 use Zodream\ThirdParty\ThirdParty;
 use Zodream\Disk\File;
 use Exception;
@@ -73,7 +73,7 @@ abstract class BaseALi extends ThirdParty {
     /**
      * @return Http
      */
-    public function getBaseHttp() {
+    public function getBaseHttp(): Http {
         return $this->getHttp('https://openapi.alipay.com/gateway.do?charset=utf-8')
             ->maps([
                 '#app_id',
@@ -107,7 +107,7 @@ abstract class BaseALi extends ThirdParty {
         return $this->privateKeyFile;
     }
 
-    public function setPrivateKeyFile($file) {
+    public function setPrivateKeyFile(mixed $file) {
         $this->privateKeyFile = $file instanceof File ? $file : new File($file);
         return $this;
     }
@@ -119,7 +119,7 @@ abstract class BaseALi extends ThirdParty {
         return $this->publicKeyFile;
     }
 
-    public function setPublicKeyFile($file) {
+    public function setPublicKeyFile(mixed $file) {
         $this->publicKeyFile = $file instanceof File ? $file : new File($file);
         return $this;
     }
@@ -128,7 +128,7 @@ abstract class BaseALi extends ThirdParty {
         return $this->caFile;
     }
 
-    public function setCaFile($file) {
+    public function setCaFile(mixed $file) {
         $this->caFile = $file instanceof File ? $file : new File($file);
         return $this;
     }
@@ -136,7 +136,7 @@ abstract class BaseALi extends ThirdParty {
     /**
      * 获取rsa
      */
-    public function getRsa() {
+    public function getRsa(): Rsa {
         $rsa = new Rsa();
         $rsa->setPrivateKey(empty($this->getPrivateKeyFile())
             || !$this->getPrivateKeyFile()->exist() ? $this->privateKey : $this->getPrivateKeyFile())

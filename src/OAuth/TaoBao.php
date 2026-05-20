@@ -1,5 +1,8 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
+
+use Zodream\Http\Http;
 /**
  * Created by PhpStorm.
  * User: zx648
@@ -10,7 +13,7 @@ class TaoBao extends BaseOAuth {
 
     protected string $configKey = 'taobao';
 
-    public function getLogin() {
+    public function getLogin(): Http {
         return $this->getBaseHttp()
             ->url('https://oauth.taobao.com/authorize', [
                 '#client_id',
@@ -22,7 +25,7 @@ class TaoBao extends BaseOAuth {
             ]);
     }
 
-    public function getAccess() {
+    public function getAccess(): Http {
         return $this->getBaseHttp('https://oauth.taobao.com/token')
             ->maps([
                 '#client_id',

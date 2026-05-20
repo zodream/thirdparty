@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\ALi;
 
 use Zodream\Helpers\Json;
@@ -10,7 +11,7 @@ abstract class BaseZhiMa extends BaseALi {
     /**
      * @return Http
      */
-    public function getBaseHttp() {
+    public function getBaseHttp(): Http {
         return $this->getHttp('https://zmopenapi.zmxy.com.cn/openapi.do')
             ->maps([
                 '#app_id',
@@ -56,9 +57,9 @@ abstract class BaseZhiMa extends BaseALi {
             });
     }
 
-    protected function buildQuery(array $params, $needEncode = true) {
+    protected function buildQuery(array $params, bool $needEncode = true): string {
         ksort($params);
-        $stringToBeSigned = "";
+        $stringToBeSigned = '';
         $i = 0;
         foreach ($params as $k => $v) {
             if ($needEncode){

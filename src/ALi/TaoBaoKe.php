@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\ALi;
 
 use Zodream\Helpers\Json;
@@ -22,7 +23,7 @@ class TaoBaoKe extends ThirdParty {
      * @param array $append
      * @return Http
      */
-    public function getBaseHttp($method, $append = []) {
+    public function getBaseHttp(string $method, array $append = []): Http {
         return $this->getHttp('https://eco.taobao.com/router/rest')
             ->maps(array_merge([
                 '#app_key',
@@ -60,7 +61,7 @@ class TaoBaoKe extends ThirdParty {
             });
     }
 
-    public function sign($content) {
+    public function sign(mixed $content): string {
         if (is_array($content)) {
             $content = $this->getSignContent($content);
         }
@@ -71,18 +72,18 @@ class TaoBaoKe extends ThirdParty {
         return hash_hmac('md5', $content, $secret);
     }
 
-    public function getSignType() {
+    public function getSignType(): string {
         return strtoupper($this->get('sign_method', 'hmac'));
     }
 
-    protected function getSignContent(array $params) {
+    protected function getSignContent(array $params): string {
         $keys = array_keys($params);
         sort($keys);
         return implode('', $keys);
     }
 
 
-    public function getSearch() {
+    public function getSearch(): Http {
         return $this->getBaseHttp('taobao.tbk.item.get', [
             'fields' => 'num_iid,title,pict_url,small_images,reserve_price,zk_final_price,user_type,provcity,item_url,seller_id,volume,nick',
             'q',
@@ -100,7 +101,7 @@ class TaoBaoKe extends ThirdParty {
         ]);
     }
 
-    public function getRecommend() {
+    public function getRecommend(): Http {
         return $this->getBaseHttp('taobao.tbk.item.recommend.get', [
             'fields' => 'num_iid,title,pict_url,small_images,reserve_price,zk_final_price,user_type,provcity,item_url',
             '#num_iid',
@@ -109,7 +110,7 @@ class TaoBaoKe extends ThirdParty {
         ]);
     }
 
-    public function getInfo() {
+    public function getInfo(): Http {
         return $this->getBaseHttp('taobao.tbk.item.info.get', [
             '#num_iid',
             'ip',
@@ -117,7 +118,7 @@ class TaoBaoKe extends ThirdParty {
         ]);
     }
 
-    public function getLinks() {
+    public function getLinks(): Http {
         return $this->getBaseHttp('taobao.tbk.ju.tqg.get', [
             '#adzone_id',
             'fields' => 'click_url,pic_url,reserve_price,zk_final_price,total_amount,sold_num,title,category_name,start_time,end_time',
@@ -132,7 +133,7 @@ class TaoBaoKe extends ThirdParty {
      * 获取淘宝客商品链接转换
      * @return Http
      */
-    public function getConvert() {
+    public function getConvert(): Http {
         return $this->getBaseHttp('taobao.tbk.item.convert', [
             'fields' => 'num_iid,click_url',
             '#num_iids',
@@ -143,7 +144,7 @@ class TaoBaoKe extends ThirdParty {
         ]);
     }
 
-    public function getCreateTPwd() {
+    public function getCreateTPwd(): Http {
         return $this->getBaseHttp('taobao.tbk.tpwd.create', [
             'user_id',
             '#text',
@@ -153,7 +154,7 @@ class TaoBaoKe extends ThirdParty {
         ]);
     }
 
-    public function search($keywords, $page = 1) {
+    public function search(string $keywords, int $page = 1) {
         $res = $this->getSearch()->parameters([
             'q' => $keywords,
             'page_no' => $page

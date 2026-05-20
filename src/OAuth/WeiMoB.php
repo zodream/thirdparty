@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
 
 /**
@@ -13,7 +14,7 @@ class WeiMoB extends BaseOAuth {
 
     protected string $configKey = 'weimob';
 
-    public function getLogin() {
+    public function getLogin(): Http {
         return $this->getBaseHttp()
             ->url('https://dopen.weimob.com/fuwu/b/oauth2/authorize',
                 [
@@ -26,7 +27,7 @@ class WeiMoB extends BaseOAuth {
                 ]);
     }
 
-    public function getAccess() {
+    public function getAccess(): Http {
         return $this->getBaseHttp()
             ->url('https://dopen.weimob.com/fuwu/b/oauth2/token',
                 [
@@ -40,7 +41,7 @@ class WeiMoB extends BaseOAuth {
     }
 
 
-    public function getInfo() {
+    public function getInfo(): Http {
         return $this->getBaseHttp()
             ->url('http://dopen.weimob.com/api/1_0/open/usercenter/getWeimobUserInfo',
                 [
