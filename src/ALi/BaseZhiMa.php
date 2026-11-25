@@ -3,15 +3,15 @@ declare(strict_types=1);
 namespace Zodream\ThirdParty\ALi;
 
 use Zodream\Helpers\Json;
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 use Exception;
 
 abstract class BaseZhiMa extends BaseALi {
 
     /**
-     * @return Http
+     * @return HttpClient
      */
-    public function getBaseHttp(): Http {
+    public function getBaseHttp(): HttpClient {
         return $this->getHttp('https://zmopenapi.zmxy.com.cn/openapi.do')
             ->maps([
                 '#app_id',

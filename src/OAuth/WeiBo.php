@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
 
 
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 /**
  * Created by PhpStorm.
  * User: zx648
@@ -23,7 +23,7 @@ class WeiBo extends BaseOAuth {
      */
     protected string $configKey = 'weibo';
 
-    public function getLogin(): Http {
+    public function getLogin(): HttpClient {
         return $this->getBaseHttp()
             ->url('https://api.weibo.com/oauth2/authorize', [
                 '#client_id',
@@ -36,7 +36,7 @@ class WeiBo extends BaseOAuth {
             ]);
     }
 
-    public function getAccess(): Http {
+    public function getAccess(): HttpClient {
         return $this->getBaseHttp('https://api.weibo.com/oauth2/access_token')
             ->maps([
                 '#client_id',
@@ -47,21 +47,21 @@ class WeiBo extends BaseOAuth {
             ]);
     }
 
-    public function getToken(): Http {
+    public function getToken(): HttpClient {
         return $this->getBaseHttp('https://api.weibo.com/oauth2/get_token_info')
             ->maps([
                 '#access_token',
             ]);
     }
 
-    public function getDelete(): Http {
+    public function getDelete(): HttpClient {
         return $this->getBaseHttp('https://api.weibo.com/oauth2/revokeoauth2')
             ->maps([
                 '#access_token',
             ]);
     }
 
-    public function getInfo(): Http {
+    public function getInfo(): HttpClient {
         return $this->getBaseHttp()
             ->url('https://api.weibo.com/2/users/show.json',
                 [

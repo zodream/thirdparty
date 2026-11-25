@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Zodream\ThirdParty\Translate;
 
 use Zodream\Helpers\Json;
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 use Zodream\ThirdParty\ThirdParty;
 
 class Tencent extends ThirdParty implements ITranslateProtocol {
@@ -51,7 +51,7 @@ class Tencent extends ThirdParty implements ITranslateProtocol {
             ->header('X-TC-Region', $this->get('region', 'ap-guangzhou'))
             ->header('X-TC-Action', 'TextTranslateBatch')
             ->header('Content-Type', 'application/json; charset=utf-8')
-            ->method(Http::POST)->parameters($data);
+            ->method(HttpClient::POST)->parameters($data);
     }
 
     public function trans(string $sourceLang, string $targetLang, array|string $text): string|array {

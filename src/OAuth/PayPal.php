@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
 
 
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 /**
  * Created by PhpStorm.
  * User: zx648
@@ -22,12 +22,12 @@ class PayPal extends BaseOAuth {
         self::SANDBOX => 'https://www.sandbox.paypal.com/'
     ];
 
-    public function baseUriHttp(string $path, array $maps = []): Http {
+    public function baseUriHttp(string $path, array $maps = []): HttpClient {
         return $this->getBaseHttp()
             ->url($this->baseUrl[$this->mode].$path, $maps);
     }
 
-    public function getLogin(): Http {
+    public function getLogin(): HttpClient {
         return $this->baseUriHttp('signin/authorize', [
             '#client_id',
             'response_type' => 'code',
@@ -38,7 +38,7 @@ class PayPal extends BaseOAuth {
         ]);
     }
 
-    public function getAccess(): Http {
+    public function getAccess(): HttpClient {
         return $this->getBaseHttp('webapps/auth/protocol/openidconnect/v1/identity/tokenservice')
             ->maps([
                 'grant_type' => 'authorization_code',
@@ -55,7 +55,7 @@ class PayPal extends BaseOAuth {
             ]);
     }
 
-    public function getRefresh(): Http {
+    public function getRefresh(): HttpClient {
         return $this->baseUriHttp('webapps/auth/protocol/openidconnect/v1/identity/tokenservice',
             [
                 'grant_type' => 'refresh_token',
@@ -64,7 +64,7 @@ class PayPal extends BaseOAuth {
             ]);
     }
 
-    public function getInfo(): Http {
+    public function getInfo(): HttpClient {
         return $this->baseUriHttp('webapps/auth/protocol/openidconnect/v1/identity/openidconnect/userinfo',
             [
                 'schema' => 'openid',

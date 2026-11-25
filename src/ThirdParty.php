@@ -9,7 +9,7 @@ namespace Zodream\ThirdParty;
  * Time: 11:44
  */
 use Zodream\Helpers\Str;
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 use Zodream\Http\Uri;
 use Zodream\ThirdParty\Traits\Attributes;
 
@@ -49,10 +49,10 @@ abstract class ThirdParty implements IThirdPartyProtocol {
     /**
      * 生成新的请求
      * @param Uri|string|null $url
-     * @return Http
+     * @return HttpClient
      */
-    public function getHttp(Uri|string|null $url = null): Http {
-        return new Http($url);
+    public function getHttp(Uri|string|null $url = null): HttpClient {
+        return new HttpClient($url);
     }
 
     /**
@@ -70,7 +70,7 @@ abstract class ThirdParty implements IThirdPartyProtocol {
             throw new \Exception('error api '.$name);
         }
         $args = array_merge($this->get(), $args);
-        /** @var Http $http */
+        /** @var HttpClient $http */
         $http = $this->{$method}(...$args);
         return $http->text();
     }

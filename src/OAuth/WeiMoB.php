@@ -8,13 +8,13 @@ namespace Zodream\ThirdParty\OAuth;
  * Date: 2016/9/7
  * Time: 9:19
  */
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 
 class WeiMoB extends BaseOAuth {
 
     protected string $configKey = 'weimob';
 
-    public function getLogin(): Http {
+    public function getLogin(): HttpClient {
         return $this->getBaseHttp()
             ->url('https://dopen.weimob.com/fuwu/b/oauth2/authorize',
                 [
@@ -27,7 +27,7 @@ class WeiMoB extends BaseOAuth {
                 ]);
     }
 
-    public function getAccess(): Http {
+    public function getAccess(): HttpClient {
         return $this->getBaseHttp()
             ->url('https://dopen.weimob.com/fuwu/b/oauth2/token',
                 [
@@ -37,11 +37,11 @@ class WeiMoB extends BaseOAuth {
                     '#code',
                     '#redirect_uri',
                     'state'
-                ])->method(Http::POST);
+                ])->method(HttpClient::POST);
     }
 
 
-    public function getInfo(): Http {
+    public function getInfo(): HttpClient {
         return $this->getBaseHttp()
             ->url('http://dopen.weimob.com/api/1_0/open/usercenter/getWeimobUserInfo',
                 [

@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Zodream\ThirdParty\Pay;
 
 use Exception;
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 
 /**
  * 银联电子支付
@@ -182,7 +182,7 @@ class ChinaPay extends BasePay {
         ksort($params);
         $args = [];
         foreach ($params as $key => $item) {
-            if (Http::isEmpty($item)
+            if (HttpClient::isEmpty($item)
                 || in_array($key, $this->ignoreKeys)
             ) {
                 continue;
@@ -232,7 +232,7 @@ class ChinaPay extends BasePay {
      * @throws Exception
      */
     public function oldForm(array $args, $buttonTip = '立即使用银联支付') {
-        $data = $this->encodeSign(Http::getMapParameters([
+        $data = $this->encodeSign(HttpClient::getMapParameters([
             'Version' => '20140728',
             'AccessType',// => '0',
             'InstuId',

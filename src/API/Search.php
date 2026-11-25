@@ -8,13 +8,13 @@ namespace Zodream\ThirdParty\API;
  * Time: 12:03
  */
 use Zodream\ThirdParty\ThirdParty;
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 
 class Search extends ThirdParty {
 
     protected string $configKey = 'search';
 
-    public function getBaiDu(): Http {
+    public function getBaiDu(): HttpClient {
         return $this->getHttp()
             ->url('http://data.zz.baidu.com/urls', [
                 '#site',

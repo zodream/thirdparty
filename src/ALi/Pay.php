@@ -3,16 +3,16 @@ declare(strict_types=1);
 namespace Zodream\ThirdParty\ALi;
 
 
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 use Exception;
 
 class Pay extends BaseALi {
 
     /**
      * PC 网站支付
-     * @return Http
+     * @return HttpClient
      */
-    public function getWebPay(): Http {
+    public function getWebPay(): HttpClient {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'alipay.trade.page.pay',
@@ -40,9 +40,9 @@ class Pay extends BaseALi {
 
     /**
      * H5 支付
-     * @return Http
+     * @return HttpClient
      */
-    public function getWapPay(): Http {
+    public function getWapPay(): HttpClient {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'alipay.trade.wap.pay',
@@ -73,9 +73,9 @@ class Pay extends BaseALi {
 
     /**
      * 手机APP支付
-     * @return Http
+     * @return HttpClient
      */
-    public function getAppPay(): Http {
+    public function getAppPay(): HttpClient {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'alipay.trade.app.pay',
@@ -101,9 +101,9 @@ class Pay extends BaseALi {
 
     /**
      * 当面支付
-     * @return Http
+     * @return HttpClient
      */
-    public function getPay(): Http {
+    public function getPay(): HttpClient {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'alipay.trade.pay',
@@ -130,9 +130,9 @@ class Pay extends BaseALi {
 
     /**
      * 统一收单交易退款接口
-     * @return Http
+     * @return HttpClient
      */
-    public function getRefund(): Http {
+    public function getRefund(): HttpClient {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'alipay.trade.refund',
@@ -161,7 +161,7 @@ class Pay extends BaseALi {
             ]);
     }
 
-    public function getQuery(): Http {
+    public function getQuery(): HttpClient {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'alipay.trade.query',
@@ -181,7 +181,7 @@ class Pay extends BaseALi {
      */
     public function responseNotify() {
         $data = $_POST;//Requests::isPost() ? $_POST : $_GET;
-        Http::log('ALIPAY NOTIFY: '.var_export($data, true));
+        HttpClient::log('ALIPAY NOTIFY: '.var_export($data, true));
         if (!$this->verify($data)) {
             throw new Exception(
                 __('notify verify error')
@@ -192,7 +192,7 @@ class Pay extends BaseALi {
 
     public function responseReturn() {
         $data = $_GET;//Requests::isPost() ? $_POST : $_GET;
-        Http::log('ALIPAY RETURN: '.var_export($data, true));
+        HttpClient::log('ALIPAY RETURN: '.var_export($data, true));
         if (!$this->verify($data)) {
             throw new Exception(
                 __('return verify error')

@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
 
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 /**
  * Created by PhpStorm.
  * User: zx648
@@ -12,7 +12,7 @@ use Zodream\Http\Http;
 class BaiDu extends BaseOAuth {
     protected string $configKey= 'baidu';
 
-    public function getLogin(): Http {
+    public function getLogin(): HttpClient {
         return $this->getBaseHttp()
             ->url('http://openapi.baidu.com/oauth/2.0/authorize', [
                 '#client_id',
@@ -26,7 +26,7 @@ class BaiDu extends BaseOAuth {
             ]);
     }
 
-    public function getAccess(): Http {
+    public function getAccess(): HttpClient {
         return $this->getBaseHttp()->url('https://openapi.baidu.com/oauth/2.0/token', [
             'grant_type' => 'authorization_code',
             '#code',
@@ -36,7 +36,7 @@ class BaiDu extends BaseOAuth {
         ]);
     }
 
-    public function getRefresh(): Http {
+    public function getRefresh(): HttpClient {
         return $this->getBaseHttp()->url('https://openapi.baidu.com/oauth/2.0/token', [
             'grant_type' => 'refresh_token',
             '#refresh_token',
@@ -46,7 +46,7 @@ class BaiDu extends BaseOAuth {
         ]);
     }
 
-    public function getUid(): Http {
+    public function getUid(): HttpClient {
         return $this->getBaseHttp('https://openapi.baidu.com/rest/2.0/passport/users/getLoggedInUser')
             ->maps([
                 '#access_token',
@@ -54,7 +54,7 @@ class BaiDu extends BaseOAuth {
             ]);
     }
 
-    public function getInfo(): Http {
+    public function getInfo(): HttpClient {
         return $this->getBaseHttp()->url('https://openapi.baidu.com/rest/2.0/passport/users/getInfo', [
             '#access_token',
             'callback'

@@ -8,7 +8,7 @@ namespace Zodream\ThirdParty\Pay;
  * Date: 2016/8/18
  * Time: 19:07
  */
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 use Zodream\Image\Image;
 use Zodream\Image\QrCode;
 use Zodream\Disk\File;
@@ -52,7 +52,7 @@ class WeChat extends BasePay {
 
     /**
      * @param null $url
-     * @return $this|Http
+     * @return HttpClient
      */
     public function getBaseHttp($url = null) {
         $arg = Str::random(32);
@@ -67,7 +67,7 @@ class WeChat extends BasePay {
 
     /**
      * @param null $url
-     * @return Http
+     * @return HttpClient
      * @throws Exception
      */
     public function getBaseHttpWithCert($url = null) {
@@ -90,7 +90,7 @@ class WeChat extends BasePay {
 
     /**
      * 统一下单
-     * @return Http
+     * @return HttpClient
      */
     public function getOrder() {
         return $this->getBaseHttp('pay/unifiedorder')
@@ -125,7 +125,7 @@ class WeChat extends BasePay {
      * @throws Exception
      */
     public function getAppPay() {
-        $data = Http::getMapParameters([
+        $data = HttpClient::getMapParameters([
             '#appid',
             '#mch_id:partnerid',
             '#prepay_id:prepayid',
@@ -150,7 +150,7 @@ class WeChat extends BasePay {
 
     /**
      * 查询订单
-     * @return Http
+     * @return HttpClient
      */
     public function getQuery() {
         return $this->getBaseHttp('pay/orderquery')
@@ -169,7 +169,7 @@ class WeChat extends BasePay {
 
     /**
      * 关闭订单
-     * @return Http
+     * @return HttpClient
      */
     public function getClose() {
         return $this->getBaseHttp('pay/closeorder')
@@ -185,7 +185,7 @@ class WeChat extends BasePay {
 
     /**
      * 申请退款 需要双向证书
-     * @return Http
+     * @return HttpClient
      * @throws Exception
      */
     public function getRefund() {
@@ -212,7 +212,7 @@ class WeChat extends BasePay {
 
     /**
      * 查询退款
-     * @return Http
+     * @return HttpClient
      */
     public function getQueryRefund() {
         return $this->getBaseHttp('pay/refundquery')
@@ -234,7 +234,7 @@ class WeChat extends BasePay {
 
     /**
      * 下载对账单
-     * @return Http
+     * @return HttpClient
      */
     public function getBill() {
         return $this->getBaseHttp('pay/downloadbill')
@@ -252,7 +252,7 @@ class WeChat extends BasePay {
 
     /**
      * 下载资金账单 需要双向证书
-     * @return Http
+     * @return HttpClient
      * @throws Exception
      */
     public function getDownloadFundFlow() {
@@ -271,7 +271,7 @@ class WeChat extends BasePay {
 
     /**
      * 拉取订单评价数据
-     * @return Http
+     * @return HttpClient
      * @throws Exception
      */
     public function getOrderComment() {
@@ -291,7 +291,7 @@ class WeChat extends BasePay {
 
     /**
      * 获取沙箱密钥
-     * @return Http
+     * @return HttpClient
      */
     public function getSandboxKey() {
         return $this->getBaseHttp('pay/getsignkey')
@@ -304,7 +304,7 @@ class WeChat extends BasePay {
 
     /**
      * 生成支付二维码
-     * @return Http
+     * @return HttpClient
      */
     public function getPayQr() {
         return $this->getBaseHttp()
@@ -325,7 +325,7 @@ class WeChat extends BasePay {
      * @throws Exception
      */
     public function getQrReturn() {
-        $data = Http::getMapParameters([
+        $data = HttpClient::getMapParameters([
             'return_code' => 'SUCCESS',
             'return_msg',
             '#appid',
@@ -341,7 +341,7 @@ class WeChat extends BasePay {
 
     /**
      * 先生成预支付订单再生成二维码
-     * @return Http
+     * @return HttpClient
      */
     public function getOrderQr() {
         return $this->getBaseHttp()
@@ -356,7 +356,7 @@ class WeChat extends BasePay {
      * @throws Exception
      */
     public function getJsApi() {
-        return Http::getMapParameters([
+        return HttpClient::getMapParameters([
             '#appId',
             '#timeStamp',
             '#nonceStr',
@@ -370,7 +370,7 @@ class WeChat extends BasePay {
 
     /**
      * 海关申报
-     * @return Http
+     * @return HttpClient
      */
     public function getDeclareOrder() {
         return $this->getBaseHttp('https://api.mch.weixin.qq.com/cgi-bin/mch/customs/customdeclareorder')
@@ -398,7 +398,7 @@ class WeChat extends BasePay {
 
     /**
      * 企业付款给个人微信零钱
-     * @return Http
+     * @return HttpClient
      */
     public function getTransfer() {
         return $this->getBaseHttp('https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers')
@@ -420,7 +420,7 @@ class WeChat extends BasePay {
 
     /**
      * 查询企业付款
-     * @return Http
+     * @return HttpClient
      */
     public function getQueryTransfer() {
         return $this->getBaseHttp('https://api.mch.weixin.qq.com/mmpaymkttransfers/gettransferinfo')
@@ -435,7 +435,7 @@ class WeChat extends BasePay {
 
     /**
      * 企业付款到银行卡
-     * @return Http
+     * @return HttpClient
      */
     public function getTransferBank() {
         return $this->getBaseHttp('https://api.mch.weixin.qq.com/mmpaysptrans/pay_bank')
@@ -454,7 +454,7 @@ class WeChat extends BasePay {
 
     /**
      * 查询企业付款银行卡
-     * @return Http
+     * @return HttpClient
      */
     public function getQueryTransferBank() {
         return $this->getBaseHttp('https://api.mch.weixin.qq.com/mmpaysptrans/query_bank')
@@ -625,10 +625,10 @@ class WeChat extends BasePay {
 
     /**
      * 添加证书
-     * @param Http $http
-     * @return Http
+     * @param HttpClient $http
+     * @return HttpClient
      */
-    public function setCert(Http $http) {
+    public function setCert(HttpClient $http) {
         //两个文件合成一个.pem文件
         if (!empty($this->privateKeyFile)) {
             return $http->setOption(CURLOPT_SSLCERT, (string)$this->privateKeyFile);
@@ -657,7 +657,7 @@ class WeChat extends BasePay {
         ksort($args);
         $arg = '';
         foreach ($args as $key => $item) {
-            if (Http::isEmpty($item) ||
+            if (HttpClient::isEmpty($item) ||
                 in_array($key, $this->ignoreKeys)) {
                 continue;
             }
@@ -696,13 +696,8 @@ class WeChat extends BasePay {
                 __('xml error')
             );
         }
-        /**
-         * 禁止引用外部xml实体
-         */
-        $disableLibxmlEntityLoader = libxml_disable_entity_loader(true);
         $args = Xml::specialDecode($xml);
-        libxml_disable_entity_loader($disableLibxmlEntityLoader);
-        Http::log('WECHAT PAY CALLBACK: '.$xml);
+        HttpClient::log('WECHAT PAY CALLBACK: '.$xml);
         if (!is_array($args)) {
             throw new Exception(
                 __('xml error')

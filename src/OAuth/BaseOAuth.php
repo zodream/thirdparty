@@ -7,7 +7,7 @@ namespace Zodream\ThirdParty\OAuth;
  * Date: 2016/4/10
  * Time: 14:34
  */
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 use Zodream\Http\Uri;
 use Zodream\ThirdParty\ThirdParty;
 use Zodream\Helpers\Str;
@@ -31,22 +31,22 @@ abstract class BaseOAuth extends ThirdParty  {
 
     protected string $stateKey = 'state';
 
-    public function getBaseHttp(mixed $url = null): Http {
+    public function getBaseHttp(mixed $url = null): HttpClient {
         return $this->getHttp($url)
             ->parameters($this->get());
     }
 
     /**
-     * @return Http
+     * @return HttpClient
      */
-    abstract public function getLogin(): Http;
+    abstract public function getLogin(): HttpClient;
 
     /**
      * @return bool
      * @throws \Exception
      */
     public function callback() {
-        Http::log(strtoupper($this->configKey).' CALLBACK: '.var_export($_GET, true));
+        HttpClient::log(strtoupper($this->configKey).' CALLBACK: '.var_export($_GET, true));
         $state = isset($_GET[$this->stateKey]) ? $_GET[$this->stateKey] : null;
         if (empty($state)) {
             return false;

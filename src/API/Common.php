@@ -3,15 +3,15 @@ declare(strict_types=1);
 namespace Zodream\ThirdParty\API;
 
 use Zodream\ThirdParty\ThirdParty;
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 
 class Common extends ThirdParty  {
 
     /**
      * 获取天气情况
-     * @return Http
+     * @return HttpClient
      */
-    public function getWeather(): Http {
+    public function getWeather(): HttpClient {
         return $this->getHttp()
             ->url('http://op.juhe.cn/onebox/weather/query', [
                 '#cityname',
@@ -22,9 +22,9 @@ class Common extends ThirdParty  {
 
     /**
      * 站点扫描
-     * @return Http
+     * @return HttpClient
      */
-    public function getWebscan(): Http {
+    public function getWebscan(): HttpClient {
         return $this->getHttp()
             ->url('http://apis.juhe.cn/webscan/', [
                 '#domain',
@@ -34,7 +34,7 @@ class Common extends ThirdParty  {
             ]);
     }
 
-    public function getWooyun(): Http {
+    public function getWooyun(): HttpClient {
         return $this->getHttp()
             ->url('http://op.juhe.cn/wooyun/index', [
                 '#key',
@@ -44,7 +44,7 @@ class Common extends ThirdParty  {
             ]);
     }
 
-    public function getIp(): Http {
+    public function getIp(): HttpClient {
         return $this->getHttp()
             ->url('http://apis.juhe.cn/ip/ip2addr', [
                 '#key',
@@ -53,7 +53,7 @@ class Common extends ThirdParty  {
             ]);
     }
 
-    public function getKuaidi(bool $isCompany = false): Http {
+    public function getKuaidi(bool $isCompany = false): HttpClient {
         if ($isCompany) {
             return $this->getHttp('http://poll.kuaidi100.com/poll/query.do')
                 ->maps([
@@ -73,7 +73,7 @@ class Common extends ThirdParty  {
             ]);
     }
 
-    public function getExchange(): Http {
+    public function getExchange(): HttpClient {
         return $this->getHttp()
             ->url('http://apis.baidu.com/apistore/currencyservice/currency', [
                 '#fromCurrency',
@@ -82,7 +82,7 @@ class Common extends ThirdParty  {
             ]);
     }
 
-    public function getSinaIp(): Http {
+    public function getSinaIp(): HttpClient {
         return $this->getHttp()
             ->url('http://int.dpool.sina.com.cn/iplookup/iplookup.php', [
                     'format' => 'json',
@@ -90,7 +90,7 @@ class Common extends ThirdParty  {
                 ]);
     }
 
-    public function getTaoBaoIp(): Http {
+    public function getTaoBaoIp(): HttpClient {
         return $this->getHttp()
             ->url('http://ip.taobao.com/service/getIpInfo.php', [
                 '#ip'

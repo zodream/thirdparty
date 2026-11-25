@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
 
 use Zodream\ThirdParty\ALi\OAuth;
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 
 /**
  * Created by PhpStorm.
@@ -17,7 +17,7 @@ class ALiPay extends BaseOAuth {
 
     protected string $codeKey = 'auth_code';
 
-    public function getLogin(): Http {
+    public function getLogin(): HttpClient {
         return $this->getBaseHttp()
             ->url('https://openauth.alipay.com/oauth2/publicAppAuthorize.htm', [
                 '#app_id',

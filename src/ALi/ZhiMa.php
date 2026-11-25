@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Zodream\ThirdParty\ALi;
 
 use Zodream\Helpers\Json;
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 
 /**
  * 芝麻分
@@ -16,9 +16,9 @@ class ZhiMa extends BaseALi {
 
     /**
      * 授权查询
-     * @return Http
+     * @return HttpClient
      */
-    public function getAuthQuery(): Http {
+    public function getAuthQuery(): HttpClient {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'zhima.auth.info.authquery',
@@ -32,7 +32,7 @@ class ZhiMa extends BaseALi {
     /**
      * 获取芝麻分
      */
-    public function getScore(): Http {
+    public function getScore(): HttpClient {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'zhima.credit.score.get',
@@ -45,9 +45,9 @@ class ZhiMa extends BaseALi {
 
     /**
      * 用于商户做准入判断 商户输入准入分 判断用户是否准入
-     * @return Http
+     * @return HttpClient
      */
-    public function getHasScore(): Http {
+    public function getHasScore(): HttpClient {
         return $this->getBaseHttp()
             ->appendMaps([
                 'method' => 'zhima.credit.score.brief.get',

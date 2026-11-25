@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Zodream\ThirdParty\SMS;
 
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 use Zodream\ThirdParty\ThirdParty;
 
 /**
@@ -136,7 +136,7 @@ class ALiDaYu extends ThirdParty implements IShortMessageProtocol {
         ksort($data);
         $arg = '';
         foreach ($data as $key => $item) {
-            if (Http::isEmpty($item) || $key == 'sign') {
+            if (HttpClient::isEmpty($item) || $key == 'sign') {
                 continue;
             }
             $arg .= $key.$item;

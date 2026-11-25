@@ -3,7 +3,7 @@ declare(strict_types=1);
 namespace Zodream\ThirdParty\OAuth;
 
 use Zodream\Helpers\Str;
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 
 /**
  * Created by PhpStorm.
@@ -24,7 +24,7 @@ class WeChat extends BaseOAuth {
      */
     protected string $configKey = 'wechat';
 
-    public function getLogin(): Http {
+    public function getLogin(): HttpClient {
         return $this->getBaseHttp()
             ->url('https://open.weixin.qq.com/connect/qrconnect', [
                 '#appid',
@@ -35,7 +35,7 @@ class WeChat extends BaseOAuth {
             ]);
     }
 
-    public function getAccess(): Http {
+    public function getAccess(): HttpClient {
         return $this->getBaseHttp()
             ->url('https://api.weixin.qq.com/sns/oauth2/access_token', [
                 '#appid',
@@ -45,7 +45,7 @@ class WeChat extends BaseOAuth {
             ]);
     }
 
-    public function getRefresh(): Http {
+    public function getRefresh(): HttpClient {
         return $this->getBaseHttp()
             ->url('https://api.weixin.qq.com/sns/oauth2/refresh_token', [
                 '#appid',
@@ -54,7 +54,7 @@ class WeChat extends BaseOAuth {
             ]);
     }
 
-    public function getInfo(): Http {
+    public function getInfo(): HttpClient {
         return $this->getBaseHttp()
             ->url('https://api.weixin.qq.com/sns/userinfo', [
                 '#access_token',
@@ -119,7 +119,7 @@ class WeChat extends BaseOAuth {
             ]);
         }
         $this->set('state', $state);
-        $data = json_encode(Http::getMapParameters([
+        $data = json_encode(HttpClient::getMapParameters([
             'id' => 'login_container',
             '#appid',
             'scope' => 'snsapi_login',

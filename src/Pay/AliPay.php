@@ -8,7 +8,7 @@ namespace Zodream\ThirdParty\Pay;
  * Date: 2016/8/17
  * Time: 15:21
  */
-use Zodream\Http\Http;
+use Zodream\Http\HttpClient;
 use Zodream\Http\Uri;
 use Exception;
 
@@ -55,7 +55,7 @@ class AliPay extends BasePay {
 
     /**
      * 即时支付
-     * @return Http
+     * @return HttpClient
      */
     public function getWebPay() {
         return $this->getBaseHttp()
@@ -167,7 +167,7 @@ class AliPay extends BasePay {
     }
 
     public function getAppPay() {
-        return $this->encodeSign(Http::getMapParameters([
+        return $this->encodeSign(HttpClient::getMapParameters([
             '#app_id',
             'method' => 'alipay.trade.app.pay',
             'format' => 'JSON',
@@ -190,7 +190,7 @@ class AliPay extends BasePay {
     }
 
     public function getMobilePay() {
-        $data = Http::getMapParameters([
+        $data = HttpClient::getMapParameters([
             'service' => 'mobile.securitypay.pay',
             '#partner',
             '_input_charset' => 'UTF-8',
@@ -216,7 +216,7 @@ class AliPay extends BasePay {
         reset($data);
         $args = [];
         foreach ($data as $key => $item) {
-            if (Http::isEmpty($item)
+            if (HttpClient::isEmpty($item)
                 || in_array($key, $this->ignoreKeys)) {
                 continue;
             }
@@ -473,7 +473,7 @@ class AliPay extends BasePay {
         ksort($params);
         $args = [];
         foreach ($params as $key => $item) {
-            if (Http::isEmpty($item)
+            if (HttpClient::isEmpty($item)
                 || in_array($key, $this->ignoreKeys)
                 || strpos($item, '@') === 0
             ) {
@@ -490,7 +490,7 @@ class AliPay extends BasePay {
      * @throws \Exception
      */
     public function callback() {
-        Http::log('ALIPAY CALLBACK: '.var_export($_POST, true));
+        HttpClient::log('ALIPAY CALLBACK: '.var_export($_POST, true));
         $data = $_POST;//Requests::isPost() ? $_POST : $_GET;
         if (!$this->verify($data)) {
             throw new \Exception('验签失败！');
