@@ -39,7 +39,7 @@ class WeChat extends BasePay {
      * @param $path
      * @return string
      */
-    public function getUrl($path) {
+    public function getUrl(string $path) {
         if (str_contains($path, '://')) {
             return $path;
         }
@@ -51,10 +51,10 @@ class WeChat extends BasePay {
     }
 
     /**
-     * @param null $url
+     * @param string $url
      * @return HttpClient
      */
-    public function getBaseHttp($url = null) {
+    public function getBaseHttp(string $url = '') {
         $arg = Str::random(32);
         $this->set([
             'noncestr' => $arg,
@@ -66,11 +66,11 @@ class WeChat extends BasePay {
     }
 
     /**
-     * @param null $url
+     * @param string $url
      * @return HttpClient
      * @throws Exception
      */
-    public function getBaseHttpWithCert($url = null) {
+    public function getBaseHttpWithCert(string $url = '') {
         $keyFile = $this->get('key_file');
         $certFile = $this->get('cert_file');
         if (empty($certFile)) {
